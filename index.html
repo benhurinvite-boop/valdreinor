@@ -67,7 +67,7 @@ h1 b{color:var(--gold);display:block}
 .step h3{font:700 26px 'Pixelify Sans';margin:10px 0 6px}
 .step p{color:var(--mut);font-size:16px}
 /* stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .stat{text-align:center;padding:26px 12px}
 .stat canvas{margin:0 auto 14px}
 .stat .v{font:700 clamp(30px,5vw,46px)/1.1 'Pixelify Sans';color:var(--gold)}
@@ -388,7 +388,7 @@ footer small{color:#6e6684;font-size:12px}
 
 <script>
 const IMG='https://raw.githubusercontent.com/benhurinvite-boop/valdreinor/main/';
-const MORADORES_TOTAL=900, APOIA_URL='https://apoia.se/valdreinor', IG='https://www.instagram.com/valdreinor/';
+const MORADORES_TOTAL=902, APOIA_URL='https://apoia.se/valdreinor', IG='https://www.instagram.com/valdreinor/';
 document.querySelectorAll('.apoiar').forEach(a=>a.href=APOIA_URL);
 // ---------- ícones pixel ----------
 const ICONS={
@@ -404,6 +404,8 @@ const ICONS={
  castelo:['k.k.k.k.kR','kkkkkkkkkk','kSSSSSSSSk','kSYSddSYSk','kSSSddSSSk','kkkkkkkkkk'],
  balao:['.kkkkkkk.','kWWWWWWWk','kWkWkWkWk','kWWWWWWWk','.kkkkkkk.','..k......'],
  runa:['..kkk..','.kSSSk.','kSSYSSk','kSYYYSk','kSSYSSk','kSSYSSk','kkkkkkk'],
+ coracao:['.RR.RR.','RRRRRRR','RWRRRRR','RRRRRRR','.RRRRR.','..RRR..','...R...'],
+ olho:['..kkkkk..','.kWWWWWk.','kWWBBBWWk','kWWBkBWWk','kWWBBBWWk','.kWWWWWk.','..kkkkk..'],
  coroa:['Y..Y..Y','YY.Y.YY','YYYYYYY','YRYYYRY','YYYYYYY']};
 const PAL={k:'#0a0810',H:'#3b2414',f:'#e8b48a',B:'#2f6acf',R:'#c22a2a',P:'#efe1b8',L:'#8a6a42',Y:'#ffd166',G:'#5aa040',d:'#7a5f3d',W:'#f3eee0',D:'#2c2a3a',O:'#b5732a',S:'#8a90a0'};
 function icon(name,s=6){const rows=ICONS[name],c=document.createElement('canvas');const w=Math.max(...rows.map(r=>r.length));c.width=w*s;c.height=rows.length*s;c.className='ic';const g=c.getContext('2d');rows.forEach((r,j)=>[...r].forEach((k,i)=>{if(PAL[k]){g.fillStyle=PAL[k];g.fillRect(i*s,j*s,s,s)}}));return c}
@@ -480,7 +482,7 @@ q.oninput=render;render();
 const PED=[['Guerreiros e soldados',/guerr|berserk|tank|comand|general|guarda|cavaleiro|aventur/i],['Magos e místicos',/mag|crono|necro|clér|fada|alquim|feitic|preg/i],['Exploradores e viajantes',/explor|viajant|espi|arque|florest/i],['Artesãos e ferreiros',/ferr|marcen|minera|constru/i],['Agricultores e mercadores',/agricul|fazend|mercad|pesca|cavalos/i]];
 document.getElementById('pedidos').innerHTML=PED.map(([l,r])=>`<div><b>${M.filter(m=>r.test(m[1]+' '+m[2])).length}</b><span>${l}</span></div>`).join('');
 // ---------- stats ----------
-const ST=[['episodios','5','episódios feitos'],['castelo',MORADORES_TOTAL.toLocaleString('pt-BR'),'moradores (seguidores)'],['moradores',String(M.length),'personagens com nome'],['runa','3 / 10','runas despertas']];
+const ST=[['episodios','5','episódios feitos'],['castelo',MORADORES_TOTAL.toLocaleString('pt-BR'),'moradores (seguidores)'],['balao','575','comentários'],['moradores',String(M.length),'personagens com nome'],['coracao','+1.200','curtidas no total'],['olho','+33 mil','visualizações']];
 document.getElementById('stats').innerHTML='';ST.forEach(([ic,v,k])=>{const d=document.createElement('div');d.className='box stat reveal';d.appendChild(icon(ic,7));d.insertAdjacentHTML('beforeend',`<div class="v">${v}</div><div class="k">${k}</div>`);document.getElementById('stats').appendChild(d)});
 // ---------- explore ----------
 const EX=[['moradores','Moradores','Todos os personagens com nome e o @ de cada um. Procure o seu.',''],['lore','Lore','A história de Valdreinor desde a pedra antiga: da fogueira até o dragão.',''],['mapa','Mapa','O reino visto de cima e os cinco lugares que ninguém entende.',''],['episodios','Episódios','Todos os episódios em ordem, com quantos moradores tinha em cada um.',''],['carta','Sua carta','Monte seu morador, sorteie a carta e baixe para o story.','hl'],['sugestoes','Sugestões','Quer ser um personagem? Tem uma ideia? Deixe na caixa da praça.',''],['perguntas','Perguntas','Como entrar na história, por que você ainda não apareceu e mais.',''],['apoiar','Apoiar','Ajude a manter a Pedra das Runas acesa. Valdreinor continua de graça.','fire']];
