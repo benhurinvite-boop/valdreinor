@@ -259,6 +259,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
 .ghud{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(18,16,25,.9);border:3px solid var(--line);padding:8px 12px;font-size:14px;max-width:420px}
 .ghud b{color:var(--gold);font:700 17px 'Pixelify Sans';display:block}
 .pad{position:absolute;right:10px;bottom:10px;display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:4px}
+.gact{position:absolute;right:10px;top:10px;display:none;font:12px Silkscreen;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:#2a1a00;border:0;box-shadow:0 4px 0 #b07a22;padding:12px 16px;cursor:pointer}
 .pad button{background:rgba(33,27,44,.92);border:3px solid var(--line);color:var(--gold);font-size:18px;cursor:pointer;touch-action:none}
 .pad [data-d=u]{grid-column:2}.pad [data-d=l]{grid-column:1;grid-row:2}.pad [data-d=d]{grid-column:2;grid-row:2}.pad [data-d=r]{grid-column:3;grid-row:2}
 .council{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
@@ -272,6 +273,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
 .fa{aspect-ratio:1;border:4px dashed var(--line);display:grid;place-items:center;text-align:center;color:var(--mut);font-size:13px;padding:10px;background:var(--card)}
 .fa b{display:block;font:700 34px 'Pixelify Sans';color:#3a2f52}
 @media(max-width:760px){.govgrid{grid-template-columns:1fr}.pad{grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px)}.ghud{right:136px;font-size:12px}}
+#voltar{display:none;position:sticky;top:76px;z-index:55;background:rgba(18,16,25,.94);border-bottom:4px solid var(--line);padding:10px 0}#voltar .wrap{display:flex;align-items:center;gap:14px}#voltar .btn{white-space:nowrap;padding:10px 12px;font-size:11px}#voltar span{font:700 20px 'Pixelify Sans';color:var(--gold);line-height:1.1}
+.pgoff{display:none!important}
+.mais{display:flex;justify-content:center;margin-top:18px}
 footer{padding:40px 0 30px;border-top:4px solid var(--line);text-align:center}
 footer .fl{display:flex;align-items:center;justify-content:center;gap:10px;font:700 26px 'Pixelify Sans'}
 footer .fl img{width:44px;height:44px;border-radius:50%;image-rendering:auto}
@@ -290,6 +294,7 @@ footer small{color:#6e6684;font-size:12px}
  <div class="menu" id="menu"><button class="btn g sm" onclick="this.parentNode.classList.toggle('open')">☰ <span>Menu</span></button>
   <nav id="navlist" onclick="this.parentNode.classList.remove('open')"></nav></div>
 </div></header>
+<div id="voltar"><div class="wrap"><a href="#inicio" class="btn g sm">◀ Voltar ao reino</a><span id="vtit"></span></div></div>
 
 <div class="hero" id="inicio"><img class="bg" src="https://raw.githubusercontent.com/benhurinvite-boop/valdreinor/main/hero.jpg" alt=""><canvas id="brasas"></canvas><div class="wrap">
  <img id="brasao" src="https://raw.githubusercontent.com/benhurinvite-boop/valdreinor/main/brasao.png" alt="Brasão de Valdreinor">
@@ -323,7 +328,7 @@ footer small{color:#6e6684;font-size:12px}
  </div>
 </div></section>
 
-<section style="padding-top:0"><div class="wrap"><div class="stats" id="stats"></div></div></section>
+<section id="numeros" style="padding-top:0"><div class="wrap"><div class="stats" id="stats"></div></div></section>
 
 <section id="agora" style="padding-top:0"><div class="wrap">
  <div class="box ep-now reveal">
@@ -346,6 +351,7 @@ footer small{color:#6e6684;font-size:12px}
  <div class="search"><input id="q" placeholder="Procure um nome, classe ou @…" autocomplete="off"></div>
  <div class="filters" id="filt"></div>
  <div class="grid" id="grid"></div>
+ <div class="mais"><button class="btn g" id="maisB" onclick="verTudo=true;render()">Ver todos</button></div>
  <div class="empty" id="empty">Ainda não tem ninguém com esse nome no livro… Comenta seu personagem no último episódio e ele pode entrar no próximo capítulo.</div>
  <div class="box pedidos reveal"><h3>Quem já pediu um lugar nos comentários</h3><div class="row" id="pedidos"></div></div>
  <p class="cred">Registrado pelo Cronista, na biblioteca da Ordem.</p>
@@ -379,7 +385,7 @@ footer small{color:#6e6684;font-size:12px}
  <div class="sh reveal"><div class="sk">Prova do jogo</div><h2>Ande pela vila</h2><p>Valdreinor vai virar um jogo. Enquanto isso, entre no reino com o seu boneco e explore os lugares. Siga as estradas, converse com os moradores e descubra os 16 lugares. Use as setas, o WASD ou os botões.</p></div>
  <div class="game box"><canvas id="gcv" width="720" height="460"></canvas>
   <div class="ghud" id="ghud">Ande até um lugar para descobrir o que existe lá.</div>
-  <div class="pad"><button data-d="u">▲</button><button data-d="l">◀</button><button data-d="d">▼</button><button data-d="r">▶</button></div>
+  <button class="gact" id="gact">Entrar</button><div class="pad"><button data-d="u">▲</button><button data-d="l">◀</button><button data-d="d">▼</button><button data-d="r">▶</button></div>
  </div>
  <p class="hint">Seu boneco usa a classe que você escolher na sua carta. Cada meta do Apoia.se aproxima o jogo completo.</p>
 </div></section>
@@ -468,6 +474,10 @@ const MORADORES_TOTAL=902, APOIA_URL='https://apoia.se/valdreinor', IG='https://
 document.querySelectorAll('.apoiar').forEach(a=>a.href=APOIA_URL);
 // ---------- ícones pixel ----------
 const ICONS={
+ renome:['Y..Y..Y','YY.Y.YY','YYYYYYY','YRYYYRY','YYYYYYY'],
+ governo:['...Y...','..YYY..','kkkkkkk','kSkSkSk','kSkSkSk','kSkSkSk','kkkkkkk'],
+ fanart:['kkkkkkkkk','kBBBBBBBk','kBBYBBBBk','kBBBBGGBk','kGGGGGGGk','kkkkkkkkk'],
+ jogo:['..kkkkk..','.kWWWWWk.','kWkWWWkWk','kWWWWWWWk','.kkkkkkk.'],
  moradores:['....kk......','...kHHk.kk..','...kffk.kHHk','...kffkkkffk','..kBBBBkkffk','..kBBBBkRRRk','..kBBBBkRRRk','..kBBBBkRRRk','..kkkkkkkkkk'],
  lore:['kkkkkk.kkkkkk','kPPPPPkPPPPPk','kPLLLPkPLLLPk','kPPPPPkPPPPPk','kPLLLPkPLLLPk','kPPPPPkPPPPPk','kRRRRRYRRRRRk','kkkkkkYkkkkkk'],
  mapa:['kkkkkkkkkk','kPGPPkPPRk','kPPPPkPRPk','kPPdPkPPPk','kPdPPkdPPk','kPPPPkPBBk','kkkkkkkkkk'],
@@ -544,11 +554,11 @@ const M=[
  ['Molina','O Rei Louco · exilado','','','p_molina','banido','Banido','']];
 const GRP=[['todos','Todos'],['conselho','Conselho'],['ordem','Ordem da Colheita e do Ferro'],['seguidor','Novos rostos'],['antigo','Antigos moradores'],['banido','Banidos']];
 const src=k=>IMG+k+(k.startsWith('c_')?'.jpg':'.png');
-let grp='todos';const grid=document.getElementById('grid'),q=document.getElementById('q'),filt=document.getElementById('filt'),empty=document.getElementById('empty');
+let verTudo=false;let grp='todos';const grid=document.getElementById('grid'),q=document.getElementById('q'),filt=document.getElementById('filt'),empty=document.getElementById('empty');
 GRP.forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(k==grp?' on':'');b.textContent=l;b.onclick=()=>{grp=k;[...filt.children].forEach(x=>x.classList.toggle('on',x===b));render()};filt.appendChild(b)});
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function render(){const s=q.value.trim().toLowerCase();grid.innerHTML='';let n=0;
- M.filter(m=>(grp=='todos'||m[5]==grp)&&(!s||m.slice(0,4).join(' ').toLowerCase().includes(s))).forEach(m=>{n++;
+ const lista=M.filter(m=>(grp=='todos'||m[5]==grp)&&(!s||m.slice(0,4).join(' ').toLowerCase().includes(s)));const lim=(verTudo||s||grp!='todos')?lista.length:12;document.getElementById('maisB').style.display=lista.length>lim?'inline-flex':'none';document.getElementById('maisB').textContent=`Ver todos os ${lista.length} moradores`;lista.slice(0,lim).forEach(m=>{n++;
   const ph=m[4]?`<div class="ph${m[4].startsWith('p_')?' sq':''}"><img src="${src(m[4])}" alt=""></div>`:`<div class="ph"><div class="q">?</div></div>`;
   const tg=m[6]?`<span class="tag${m[5]=='banido'?' r':m[6]=='OCF'?' o':''}">${m[6]}</span>`:'';
   const dias=m[7]?`<em>⏳ ${m[7]=='desde os primórdios'?'no reino desde os primórdios':m[7]+(m[7]=='1'?' dia':' dias')+' no reino'}</em>`:'';
@@ -562,7 +572,7 @@ document.getElementById('pedidos').innerHTML=PED.map(([l,r])=>`<div><b>${M.filte
 const ST=[['episodios','5','episódios feitos'],['castelo',MORADORES_TOTAL.toLocaleString('pt-BR'),'moradores (seguidores)'],['balao','575','comentários'],['moradores',String(M.length),'personagens com nome'],['coracao','+1.200','curtidas no total'],['olho','+33 mil','visualizações']];
 document.getElementById('stats').innerHTML='';ST.forEach(([ic,v,k])=>{const d=document.createElement('div');d.className='box stat reveal';d.appendChild(icon(ic,7));d.insertAdjacentHTML('beforeend',`<div class="v">${v}</div><div class="k">${k}</div>`);document.getElementById('stats').appendChild(d)});
 // ---------- explore ----------
-const EX=[['moradores','Moradores','Todos os personagens com nome e o @ de cada um. Procure o seu.',''],['lore','Lore','A história de Valdreinor desde a pedra antiga: da fogueira até o dragão.',''],['mapa','Mapa','O reino visto de cima e os cinco lugares que ninguém entende.',''],['episodios','Episódios','Todos os episódios em ordem, com quantos moradores tinha em cada um.',''],['carta','Sua carta','Monte seu morador, sorteie a carta e baixe para o story.','hl'],['sugestoes','Sugestões','Quer ser um personagem? Tem uma ideia? Deixe na caixa da praça.',''],['perguntas','Perguntas','Como entrar na história, por que você ainda não apareceu e mais.',''],['apoiar','Apoiar','Ajude a manter a Pedra das Runas acesa. Valdreinor continua de graça.','fire']];
+const EX=[['moradores','Moradores','Todos os personagens com nome e o @ de cada um. Procure o seu.',''],['lore','Lore','A história de Valdreinor desde a pedra antiga: da fogueira até o dragão.',''],['mapa','Mapa','O reino visto de cima e os cinco lugares que ninguém entende.',''],['episodios','Episódios','Todos os episódios em ordem, com quantos moradores tinha em cada um.',''],['carta','Sua carta','Monte seu morador, sorteie a carta e baixe para o story.','hl'],['sugestoes','Sugestões','Quer ser um personagem? Tem uma ideia? Deixe na caixa da praça.',''],['perguntas','Perguntas','Como entrar na história, por que você ainda não apareceu e mais.',''],['renome','Mural de Renome','O ranking do reino, do rank F ao SS. Veja quem são os moradores mais lendários.',''],['governo','O Governo','O rei, o conselho, os decretos e o histórico das eleições.',''],['fanart','Fan art','As artes que os moradores fizeram de Valdreinor.',''],['jogo','Ande pela vila','Uma prévia do futuro jogo: passeie pelo reino com o seu boneco.',''],['apoiar','Apoiar','Ajude a manter a Pedra das Runas acesa. Valdreinor continua de graça.','fire']];
 const exc=document.getElementById('explore-cards');EX.forEach(([id,t,p,k])=>{const a=document.createElement('a');a.href='#'+id;a.className='box ex reveal '+k;a.appendChild(icon(id,8));a.insertAdjacentHTML('beforeend',`<h3>${t}</h3><p>${p}</p>`);exc.appendChild(a)});
 // ---------- lore ----------
 const CAP=[
@@ -580,7 +590,7 @@ const EPS=[['EP01','A Pedra Antiga','2'],['EP02','Os Primeiros Moradores','474']
 const epl=document.getElementById('eps');EPS.forEach(([n,t,m],i)=>epl.insertAdjacentHTML('beforeend',`<a class="box epi${i==EPS.length-1?' now':''}" href="${IG}" target="_blank" rel="noopener"><span class="n">${n.slice(2)}</span><span class="t"><b>${t}</b><span>${i==EPS.length-1?'No ar agora · assistir no Instagram':'Assistir no Instagram'}</span></span><span class="m">${m}<br>moradores</span></a>`));
 epl.insertAdjacentHTML('beforeend',`<div class="box epi soon"><span class="n">06</span><span class="t"><b>???</b><span>Em breve. Comenta no último episódio quem você quer ser.</span></span><span class="m">1000?<br>moradores</span></div>`);
 // ---------- mapa ----------
-const PINS=[[46.4,52,'Pedra das Runas','Onde tudo começou. Dez runas: cada uma acende quando o reino atinge um novo marco de moradores.',''],[46,30.5,'Castelo do Rei Goldrath','Erguido depois da coroação. De lá o rei e o conselho governam Valdreinor.',''],[38.7,44,'Cabana da Guilda','Onde Alek fincou a bandeira da guilda.',''],[56.9,42,'Torre de Donato','A torre do Mago Sombrio, uma das primeiras construções da vila.','v'],[29.9,50,'Igreja','A igreja de Estevan, o Pregador.',''],[46.4,67,'Muralha e Portão Sul','Muralhas de quinze metros, estacas de ferro e torres ligadas entre si.',''],[83.9,51,'Cidade-Estado da Ordem','A Ordem da Colheita e do Ferro: centro comunitário, praça, mercado e forja.',''],[94,60.5,'Biblioteca','Sonhada por Tobum, construída pela Ordem. Guarda os registros do reino.',''],[16,24.5,'Lago','Onde Luciano pesca desde os primeiros dias.',''],[8.9,37.8,'Torre do Necromante','Ninguém entra. Dizem que guarda grimórios proibidos.','v'],[79.9,29.5,'Minas de Tobum','O guardião das cavernas conhece cada túnel. Pedro trabalha lá embaixo.',''],[79.9,79.6,'Ruínas','Uma luz roxa brilha à noite. As pegadas do ladrão do martelo terminavam aqui.','v'],[13.7,72.5,'Torre de Vigia','O posto de Guti, o guarda florestal.',''],[40.4,7,'Montanha do Dragão Ancestral','Algo dormia há mil anos debaixo da neve. Não dorme mais.','r'],[88,9,'Reino do Rei Demônio','Uma terra escura além da fronteira. Pouco se sabe de lá.','r'],[50,94,'Estrada do Exílio','Por onde Molina, o rei louco, foi expulso. Ninguém sabe se ele volta.','r']];
+const PINS=[[46.4,52,'Pedra das Runas','Onde tudo começou. Dez runas: cada uma acende quando o reino atinge um novo marco de moradores.',''],[46,30.5,'Castelo do Rei Goldrath','Erguido depois da coroação. De lá o rei e o conselho governam Valdreinor.',''],[38.7,44,'Cabana da Guilda','Onde Alek fincou a bandeira da guilda.',''],[56.9,42,'Torre de Donato','A torre do Mago Sombrio, uma das primeiras construções da vila.','v'],[29.9,50,'Igreja','A igreja de Estevan, o Pregador.',''],[46.4,67,'Muralha e Portão Sul','Muralhas de quinze metros, estacas de ferro e torres ligadas entre si.',''],[83.9,51,'Cidade-Estado da Ordem','A Ordem da Colheita e do Ferro: centro comunitário, praça, mercado e forja.',''],[94,60.5,'Biblioteca','Sonhada por Tobum, construída pela Ordem. Guarda os registros do reino.',''],[16,24.5,'Lago','Onde Luciano pesca desde os primeiros dias.',''],[8.9,37.8,'Torre do Necromante','Ninguém entra. Dizem que guarda grimórios proibidos.','v'],[79.9,29.5,'Minas de Tobum','O guardião das cavernas conhece cada túnel. Pedro trabalha lá embaixo.',''],[79.9,79.6,'Ruínas','Uma luz roxa brilha à noite. As pegadas do ladrão do martelo terminavam aqui.','v'],[36.7,54.5,'Taverna da Pedra Antiga','Onde os moradores se reúnem, votam e contam histórias. O Cronista sempre tem uma mesa reservada.',''],[88,57,'Forja da Ordem','O fogo que nunca apaga. Aqui nasceu o martelo novo depois do roubo.',''],[13.7,72.5,'Torre de Vigia','O posto de Guti, o guarda florestal.',''],[40.4,7,'Montanha do Dragão Ancestral','Algo dormia há mil anos debaixo da neve. Não dorme mais.','r'],[88,9,'Reino do Rei Demônio','Uma terra escura além da fronteira. Pouco se sabe de lá.','r'],[50,94,'Estrada do Exílio','Por onde Molina, o rei louco, foi expulso. Ninguém sabe se ele volta.','r']];
 const mb=document.getElementById('mapbox'),mi=document.getElementById('mapInfo');
 PINS.forEach(([x,y,t,d,k],i)=>{const p=document.createElement('button');p.className='pin '+k+(i?'':' on');p.style.left=x+'%';p.style.top=y+'%';p.textContent=i+1;p.setAttribute('aria-label',t);p.onclick=()=>{mi.innerHTML=`<div class="sk">Ponto ${i+1}</div><b>${t}</b><p>${d}</p>`;mb.querySelectorAll('.pin').forEach(z=>z.classList.toggle('on',z===p))};mb.appendChild(p)});
 // ---------- carta ----------
@@ -666,19 +676,37 @@ document.getElementById('fgrid').innerHTML=(FANART.length?FANART.map(([f,n,a])=>
   [p(247,372),p(255,405),p(262,440),p(272,472),p(290,505),p(310,532),p(345,560)],           // estrada do exílio
   [p(247,372),p(200,368),p(160,356),p(132,335),p(120,300),p(122,250),p(135,205),p(160,170),p(185,140),p(150,150),p(128,152)], // estrada oeste até o lago
   [p(122,300),p(90,318),p(60,318),p(40,325)],                                                 // trilha oeste
-  [p(132,335),p(110,345),p(80,290),p(62,255)],                                                // torre do necromante
+  [p(132,335),p(110,345),p(80,290),p(62,255),p(50,210)],                                                // torre do necromante
   [p(160,356),p(130,400),p(100,420),p(78,410)],                                               // torre de vigia
   [p(247,372),p(300,372),p(345,360),p(378,330),p(410,322),p(440,322),p(470,320),p(495,325)],  // estrada leste até a Ordem
   [p(440,322),p(470,345),p(492,360)],                                                         // biblioteca
   [p(378,330),p(385,280),p(383,230),p(392,205),p(430,200),p(460,205),p(480,215)],             // subida às minas
-  [p(430,200),p(440,165),p(458,130),p(468,100)],                                              // estrada ao Rei Demônio
+  [p(430,200),p(440,165),p(458,130),p(468,100)],[p(430,200),p(430,170)],[p(440,322),p(450,285)],[p(197,300),p(197,300)],                                              // estrada ao Rei Demônio
   [p(345,360),p(370,395),p(400,420),p(425,440)],                                              // ruínas
   [p(247,372),p(247,330),p(247,295),p(247,250),p(247,200),p(247,170)],                        // rua principal até o castelo
   [p(150,300),p(200,300),p(247,295),p(300,300),p(345,300)],                                   // rua leste-oeste
-  [p(165,255),p(205,280),p(247,295),p(290,275),p(320,250)],                                   // ruas diagonais
+  [p(160,272),p(165,255),p(205,280),p(247,295),p(290,275),p(320,250)],                                   // ruas diagonais
   [p(247,170),p(240,130),p(228,95),p(214,55)]];                                               // trilha da montanha
  const AREAS=[[p(247,295),.045],[p(440,322),.045],[p(130,152),.03],[p(425,445),.04],[p(214,50),.025]];
  const WID=.016;
+ // interiores: img, foco vertical, chão [x0,y0,x1,y1] em fração do canvas, moradores, porta
+ const INT={
+  'Castelo do Rei Goldrath':{img:'trono.jpg',fy:.28,floor:[.08,.6,.92,.97],door:[.5,.96],
+   npcs:[['Rei Goldrath',.5,.63,'#8a1a2a','#3b2414','“Bem-vindo ao salão do trono. Aqui a coroa pertence ao povo.”'],['Antônio',.27,.78,'#7a8090','#3b2414','“O exército está pronto. O dragão não vai pegar a gente desprevenido.”'],['Nicollas',.73,.78,'#3a2a6e','#e8e2c0','“Eu vi o futuro desta sala. Não posso contar o que acontece.”'],['Jock',.18,.9,'#2e5a2a','#3b2414','“Conselheiro do rei, ao seu dispor.”']]},
+  'Pedra das Runas':{img:'i_pedra.jpg',fy:.5,floor:[.2,.72,.8,.97],door:[.5,.97],npcs:[['O Cronista',.38,.8,'#4a1a6a','#e8e8e8','“Três runas acesas. Quando chegarmos a mil moradores, a quarta vai revelar um segredo.”']]},
+  'Taverna da Pedra Antiga':{img:'i_taverna.jpg',fy:.5,floor:[.06,.7,.94,.97],door:[.5,.97],npcs:[['O Cronista',.55,.72,'#4a1a6a','#e8e8e8','“Senta, pede uma caneca. Todo morador tem uma história para contar.”'],['Payko',.2,.84,'#1a1a3a','#e8e8f0','“Meio elfo, meio espadachim. E um pouco de magia.”'],['Alek',.8,.86,'#2f4ab5','#2a1a10','“A Guilda está sempre recrutando aventureiros.”'],['Harry',.35,.92,'#3f7a3a','#d9b45a','“Ainda vou entrar no conselho, você vai ver.”']]},
+  'Cidade-Estado da Ordem':{img:'i_ordem.jpg',fy:.5,floor:[.06,.7,.94,.97],door:[.5,.97],npcs:[['Tobum',.3,.78,'#6a8a3a','#2a1a10','“A Ordem da Colheita e do Ferro começou numa noite, com cinco fundadores.”'],['Nathan',.62,.74,'#2f5a8a','#2a1a10','“Cada moeda do reino passa pelas minhas contas.”'],['Mikael',.15,.9,'#3f7a3a','#d9b45a','“Os sacos de grão estão cheios. Ninguém passa fome aqui.”'],['Jock',.82,.88,'#2e5a2a','#3b2414','“Fundador da Ordem e conselheiro do rei.”']]},
+  'Igreja':{img:'i_igreja.jpg',fy:.5,floor:[.3,.66,.7,.97],door:[.5,.97],npcs:[['Estevan',.5,.7,'#e8e4da','#3b2414','“Esta igreja foi um pedido meu. Valdreinor ouviu.”'],['Gabe',.42,.86,'#e8e4da','#e8d8a0','“Que a paz esteja com você, viajante.”']]},
+  'Forja da Ordem':{img:'i_forja.jpg',fy:.5,floor:[.15,.7,.85,.97],door:[.5,.97],npcs:[['Nock',.38,.76,'#7a4f2e','#3b2414','“Falei contra o Molina. Hoje forjo as armas do povo.”'],['Pereira',.64,.78,'#7a4f2e','#3b2414','“Depois do roubo, forjei um martelo mais forte que o primeiro.”'],['Brennin',.75,.92,'#6a4a2a','#a8642a','“Marceneiro. Se é de madeira, eu faço.”']]},
+  'Minas de Tobum':{img:'i_minas.jpg',fy:.5,floor:[.2,.68,.8,.97],door:[.5,.97],npcs:[['Pedro',.36,.8,'#6a4a2a','#2a1a10','“Subalterno da mineração. Ouvi barulhos lá no fundo do túnel…”'],['Tobum',.64,.82,'#6a8a3a','#2a1a10','“Guardião das cavernas. Não vá além dos trilhos sozinho.”']]},
+  'Torre do Necromante':{img:'i_necro.jpg',fy:.5,floor:[.2,.7,.8,.97],door:[.5,.97],npcs:[['Igor, o Necromante',.5,.76,'#1a1a22','#111111','“Você não deveria estar aqui… mas já que veio, não toque nos grimórios.”']]},
+  'Biblioteca':{img:'livro.jpg',fy:.62,floor:[.06,.72,.94,.98],door:[.5,.97],
+   npcs:[['Nicollas',.25,.84,'#3a2a6e','#e8e2c0','“Esta biblioteca guarda o nome de cada morador de Valdreinor.”'],['Tobum',.72,.86,'#6a8a3a','#2a1a10','“Fui eu que sonhei com este lugar. Agora ele é de todos.”'],['O Cronista',.5,.8,'#4a1a6a','#e8e8e8','“Cada capítulo que eu escrevo começa nestas páginas.”']]}};
+ let cena=null,ip={x:.5,y:.9,dir:1,mv:0};const intImg={};
+ function entrar(nome){const I=INT[nome];if(!I)return;cena=nome;ip={x:I.door[0],y:I.door[1]-.06,dir:1,mv:0};if(!intImg[nome]){const im=new Image();im.crossOrigin='anonymous';im.src=IMG+I.img;intImg[nome]=im}}
+ function sair(){cena=null;pl.y+=.006}
+ let acao=null;const gact=document.getElementById('gact');gact.onclick=()=>{acao&&acao()};
+ addEventListener('keydown',e=>{if((e.code=='KeyE'||e.code=='Enter')&&acao&&_iv()){e.preventDefault();acao()}});
  function dseg(px,py,a,b){const dx=b[0]-a[0],dy=(b[1]-a[1])*C/B;const qx=px-a[0],qy=(py-a[1])*C/B;const t=Math.max(0,Math.min(1,(qx*dx+qy*dy)/(dx*dx+dy*dy||1)));return Math.hypot(qx-t*dx,qy-t*dy)}
  function walk(x,y){for(const [c,r] of AREAS)if(Math.hypot(x-c[0],(y-c[1])*C/B)<r)return true;for(const P of PATHS)for(let k=0;k<P.length-1;k++)if(dseg(x,y,P[k],P[k+1])<WID)return true;return false}
  let MW=1074,MH=1100;map.onload=()=>{MW=map.naturalWidth;MH=map.naturalHeight};
@@ -688,19 +716,29 @@ document.getElementById('fgrid').innerHTML=(FANART.length?FANART.map(([f,n,a])=>
  const npcs=NPCS.map(([n,t,h,pi,fala],i)=>({n,t,h,fala,P:PATHS[pi],s:Math.random(),v:(.0006+Math.random()*.0006)*(Math.random()<.5?1:-1)}));
  function posOn(P,s){const L=[];let tot=0;for(let k=0;k<P.length-1;k++){const l=Math.hypot(P[k+1][0]-P[k][0],P[k+1][1]-P[k][1]);L.push(l);tot+=l}let d=s*tot;for(let k=0;k<L.length;k++){if(d<=L[k]){const t=d/L[k];return[P[k][0]+(P[k+1][0]-P[k][0])*t,P[k][1]+(P[k+1][1]-P[k][1])*t,P[k+1][0]-P[k][0]]}d-=L[k]}const z=P[P.length-1];return[z[0],z[1],0]}
  const KM={ArrowUp:'u',KeyW:'u',ArrowDown:'d',KeyS:'d',ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r'};
- const inView=()=>{const r=document.getElementById('jogo').getBoundingClientRect();return r.top<innerHeight*.7&&r.bottom>innerHeight*.2};
- addEventListener('keydown',e=>{const k=KM[e.code];if(k&&inView()){keys[k]=1;e.preventDefault()}});addEventListener('keyup',e=>{const k=KM[e.code];if(k)keys[k]=0});
+ const _iv=()=>{const r=document.getElementById('jogo').getBoundingClientRect();return r.top<innerHeight*.7&&r.bottom>innerHeight*.2};
+ addEventListener('keydown',e=>{const k=KM[e.code];if(k&&_iv()){keys[k]=1;e.preventDefault()}});addEventListener('keyup',e=>{const k=KM[e.code];if(k)keys[k]=0});
  document.querySelectorAll('.pad button').forEach(b=>{const d=b.dataset.d;const on=e=>{e.preventDefault();keys[d]=1},off=e=>{e.preventDefault();keys[d]=0};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);b.addEventListener('pointercancel',off)});
  const hud=document.getElementById('ghud');let found=new Set();try{found=new Set(JSON.parse(localStorage.getItem('vald_lugares')||'[]'))}catch(e){}
  const COLS={guerreiro:'#2f5a8a',mago:'#2f4ab5',arqueiro:'#2e5a2a',ferreiro:'#8a5a32',mercador:'#1f6a5a',agricultor:'#7a6a3a',minerador:'#6a4a2a',clerigo:'#e8e4da',alquimista:'#7a5a3a',tank:'#8a90a0',berserker:'#8a4a2a',espiao:'#2a2a33'};
  // sprite 4 direções (8x12)
  const SPR={d:['..hhhh..','.hhhhhh.','.hffffh.','.fkffkf.','..ffff..','.tttttt.','ttttttt t','f.tttt.f','..tttt..','..tttt..','..l..l..','..l..l..'],u:['..hhhh..','.hhhhhh.','.hhhhhh.','.hhhhhh.','..hhhh..','.tttttt.','tttttttt','f.tttt.f','..tttt..','..tttt..','..l..l..','..l..l..'],s:['..hhhh..','.hhhhhh.','..hffff.','..ffkff.','...fff..','..tttt..','..ttttt.','..tfttt.','..tttt..','..tttt..','..l.l...','..l.l...']};
- function boneco(x,y,t,h,dir,step,nome,cor,big){const s=big?3:2.4;const rows=dir==1?SPR.u:dir==0?SPR.d:SPR.s;const flip=dir==2;const pal={h,f:'#e8b48a',k:'#1a1a22',t,l:'#2a1a10'};
+ function boneco(x,y,t,h,dir,step,nome,cor,big){const s=big===true?3:(big||2.4);const rows=dir==1?SPR.u:dir==0?SPR.d:SPR.s;const flip=dir==2;const pal={h,f:'#e8b48a',k:'#1a1a22',t,l:'#2a1a10'};
   g.fillStyle='rgba(0,0,0,.4)';g.beginPath();g.ellipse(x,y+2,9*s/3*1.2,3*s/3*1.2,0,0,7);g.fill();
   rows.forEach((r,j)=>{let rr=r.padEnd(8,'.').slice(0,8);if(j>=10&&step)rr=j==10?(dir<2?'.l....l.':'.l...l..'):(dir<2?'.l....l.':'..l.l...');[...rr].forEach((k,i)=>{const c=pal[k];if(!c)return;const xi=flip?7-i:i;g.fillStyle=c;g.fillRect(Math.round(x-4*s+xi*s),Math.round(y-12*s+j*s+(step&&j<10?-s*.4:0)),Math.ceil(s),Math.ceil(s))})});
   g.font='700 14px "Pixelify Sans"';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';g.strokeText(nome,x,y-12*s-6);g.fillStyle=cor;g.fillText(nome,x,y-12*s-6)}
  const dust=[];
- function loop(){f++;const sp=.0011;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:0)-(keys.u?1:0);pl.mv=0;
+ function interior(){const I=INT[cena],im=intImg[cena];let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:0)-(keys.u?1:0);ip.mv=0;
+  if(dx||dy){const n=Math.hypot(dx,dy),sp=.006;const nx=Math.min(I.floor[2],Math.max(I.floor[0],ip.x+dx/n*sp)),ny=Math.min(I.floor[3],Math.max(I.floor[1],ip.y+dy/n*sp*1.5));ip.mv=(nx!=ip.x||ny!=ip.y)?1:0;ip.x=nx;ip.y=ny;ip.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1)}
+  g.fillStyle='#0b0912';g.fillRect(0,0,cv.width,cv.height);
+  if(im&&im.complete&&im.naturalWidth){const sc=Math.max(cv.width/im.naturalWidth,cv.height/im.naturalHeight);const w=im.naturalWidth*sc,h=im.naturalHeight*sc;g.drawImage(im,(cv.width-w)/2,Math.min(0,Math.max(cv.height-h,-(h-cv.height)*I.fy)),w,h)}
+  const ents=[];let talk=null;I.npcs.forEach(([n,x,y,t,h,fala])=>{if(Math.hypot(x-ip.x,(y-ip.y)*.6)<.09)talk=[n,fala];ents.push({y,draw:()=>boneco(x*cv.width,y*cv.height,t,h,0,0,n,'#ffd166',5)})});
+  ents.push({y:ip.y,draw:()=>boneco(ip.x*cv.width,ip.y*cv.height,COLS[st.c]||'#2f5a8a','#3b2414',ip.dir,ip.mv&&Math.floor(f/8)%2,nomeV(),'#7dff8a',5)});ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
+  const nearDoor=Math.hypot(ip.x-I.door[0],ip.y-I.door[1])<.1;g.fillStyle='rgba(255,209,102,'+(.4+.3*Math.sin(f/8))+')';g.fillRect(I.door[0]*cv.width-26,cv.height-8,52,6);
+  g.fillStyle='rgba(18,16,25,.85)';g.fillRect(10,10,Math.min(cv.width-20,30+cena.length*10),30);g.font='700 15px "Pixelify Sans"';g.textAlign='left';g.fillStyle='#ffd166';g.fillText('🏰 '+cena,20,31);
+  acao=nearDoor?sair:null;gact.style.display=nearDoor?'block':'none';gact.textContent='Sair';
+  const key='i'+cena+(talk?talk[0]:'')+nearDoor;if(key!==cur){cur=key;hud.innerHTML=talk?`<b>${talk[0]}</b>${talk[1]}`:nearDoor?'<b>Porta</b>Aperte E ou toque em Sair para voltar ao reino.':`<b>${cena}</b>Ande e converse com quem está aqui.`}}
+ function loop(){f++;if(cena){interior();requestAnimationFrame(loop);return}const sp=.0011;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:0)-(keys.u?1:0);pl.mv=0;
   if(dx||dy){const n=Math.hypot(dx,dy);const nx=pl.x+dx/n*sp,ny=pl.y+dy/n*sp*MW/MH;
    if(walk(nx,ny)){pl.x=nx;pl.y=ny;pl.mv=1}else if(dx&&walk(pl.x+Math.sign(dx)*sp,pl.y)){pl.x+=Math.sign(dx)*sp;pl.mv=1}else if(dy&&walk(pl.x,pl.y+Math.sign(dy)*sp*MW/MH)){pl.y+=Math.sign(dy)*sp*MW/MH;pl.mv=1}
    pl.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1);if(pl.mv&&f%6==0)dust.push({x:pl.x,y:pl.y,a:1})}
@@ -719,7 +757,8 @@ document.getElementById('fgrid').innerHTML=(FANART.length?FANART.map(([f,n,a])=>
   const vg=g.createRadialGradient(cv.width/2,cv.height/2,cv.height*.3,cv.width/2,cv.height/2,cv.width*.7);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,cv.width,cv.height);
   g.fillStyle='rgba(18,16,25,.85)';g.fillRect(10,10,200,30);g.strokeStyle='#3b3150';g.lineWidth=3;g.strokeRect(10,10,200,30);g.font='13px "Press Start 2P"';g.textAlign='left';g.fillStyle='#ffd166';g.fillText(`🗺 ${found.size}/${PINS.length}`,20,32);g.font='700 14px "Pixelify Sans"';g.fillStyle='#efe8da';g.fillText('lugares',120,30);
   if(near&&!found.has(near[0])){found.add(near[0]);try{localStorage.setItem('vald_lugares',JSON.stringify([...found]))}catch(e){}}
-  const key=talk?'n'+talk.n:near?'p'+near[0]:'';if(key!==cur){cur=key;hud.innerHTML=talk?`<b>${talk.n}</b>${talk.fala}`:near?`<b>${near[0]}</b>${near[1]}`:(found.size==PINS.length?'<b>Você descobriu todo o reino!</b>Tire um print e marque a @valdreinor.':'Siga as estradas e descubra os lugares do reino.')}
+  const podeEntrar=near&&INT[near[0]];acao=podeEntrar?()=>entrar(near[0]):null;gact.style.display=podeEntrar?'block':'none';gact.textContent='Entrar';
+  const key=(talk?'n'+talk.n:near?'p'+near[0]:'');if(key!==cur){cur=key;hud.innerHTML=talk?`<b>${talk.n}</b>${talk.fala}`:near?`<b>${near[0]}</b>${near[1]}${podeEntrar?'<br><span style="color:var(--gold)">🚪 Aperte E ou toque em Entrar</span>':''}`:(found.size==PINS.length?'<b>Você descobriu todo o reino!</b>Tire um print e marque a @valdreinor.':'Siga as estradas e descubra os lugares do reino.')}
   requestAnimationFrame(loop)}
  requestAnimationFrame(loop)})();
 // ---------- brasas subindo ----------
@@ -728,6 +767,16 @@ document.getElementById('fgrid').innerHTML=(FANART.length?FANART.map(([f,n,a])=>
  function nova(y){return{x:Math.random()*W,y:y??H+10,r:1+Math.random()*2.5,v:.3+Math.random()*1.1,o:Math.random()*6.28,a:.4+Math.random()*.6,c:Math.random()<.75?'255,190,80':'255,120,50'}}
  for(let i=0;i<70;i++)P.push(nova(Math.random()*H));
  (function loop(t){g.clearRect(0,0,W,H);P.forEach((p,i)=>{p.y-=p.v;p.x+=Math.sin(t/900+p.o)*.4;const k=Math.max(0,Math.min(1,p.y/H));g.fillStyle=`rgba(${p.c},${p.a*k})`;const s=Math.round(p.r*2);g.fillRect(Math.round(p.x),Math.round(p.y),s,s);if(Math.random()<.02){g.fillStyle=`rgba(255,240,200,${.5*k})`;g.fillRect(Math.round(p.x)-1,Math.round(p.y)-1,s+2,s+2)}if(p.y<-10)P[i]=nova()});requestAnimationFrame(loop)})(0)})();
+// ---------- páginas ----------
+(function(){const HOME=['inicio','taverna','runabar','como','numeros','agora','explore'];
+ const secs=[...document.querySelectorAll('body > section, body > div.hero')];
+ const NOMES={moradores:'Livro dos Moradores',renome:'Mural de Renome',lore:'A história',mapa:'O mapa',jogo:'Ande pela vila',episodios:'Episódios',carta:'Sua carta',sugestoes:'Caixa da praça',perguntas:'Perguntas',governo:'O Governo',fanart:'Fan art',apoiar:'Apoiar'};
+ function rota(){const id=(location.hash||'#inicio').slice(1);const home=!NOMES[id];
+  secs.forEach(el=>el.classList.toggle('pgoff',home?!HOME.includes(el.id):el.id!==id));
+  document.getElementById('voltar').style.display=home?'none':'block';document.getElementById('vtit').textContent=NOMES[id]||'';
+  document.querySelectorAll('.reveal').forEach(e=>{if(!e.closest('.pgoff'))e.classList.add('in')});
+  if(home){const el=document.getElementById(id);if(el&&id!=='inicio')setTimeout(()=>el.scrollIntoView(),0);else scrollTo(0,0)}else scrollTo(0,0)}
+ addEventListener('hashchange',rota);rota()})();
 // ---------- reveal ----------
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(e=>io.observe(e));
 </script>
