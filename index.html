@@ -248,7 +248,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
 .pod .av img{width:100%;height:100%;object-fit:cover}
 .pod .st{margin-top:8px;padding:10px 4px;background:var(--card);border:4px solid var(--line)}.pod .st b{display:block;font:700 18px 'Pixelify Sans';color:var(--gold)}.pod .st span{font-size:12px;color:var(--mut)}
 .pod .p1 .av{border-color:var(--gold)}.pod .p1 .st{padding:18px 4px}
-.rlist{max-width:640px;margin:0 auto;padding:8px 16px}
+.rlist{max-width:640px;margin:0 auto;padding:8px 16px}.rboards{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:980px;margin:0 auto 18px}.rboard{padding:14px 16px}.rboard h3{font:700 20px 'Pixelify Sans';margin:0 0 6px;letter-spacing:.04em}.rboard.of h3{color:#7fb4ff}.rboard.cl h3{color:#ff8f8f}.rboard.of{border-color:#2b4a7a;background:linear-gradient(#13213d,#0f1a30)}.rboard.cl{border-color:#6a2a35;background:linear-gradient(#3a1820,#2a1218)}.rrow small{display:block;font-weight:400;font-size:12px;color:var(--mut)}.rrow .x{font-family:'Press Start 2P';font-size:10px}@media(max-width:760px){.rboards{grid-template-columns:1fr}}
 .rrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:3px dashed var(--line)}.rrow:last-child{border:0}
 .rrow .p{font:700 20px 'Pixelify Sans';color:var(--mut);min-width:28px}.rrow .n{flex:1;font-weight:700}.rrow .r{font:700 18px 'Pixelify Sans';background:var(--bg2);border:3px solid var(--line);padding:2px 8px;color:var(--gold)}.rrow .x{font-size:13px;color:var(--mut);min-width:70px;text-align:right}
 .comoren{max-width:640px;margin:22px auto 0;padding:22px}.comoren h3{font:700 24px 'Pixelify Sans';text-align:center;margin-bottom:12px}
@@ -358,10 +358,10 @@ footer small{color:#6e6684;font-size:12px}
 </div></section>
 
 <section id="renome"><div class="wrap">
- <div class="sh reveal"><div class="sk">Mural de Renome</div><h2>Os moradores mais lendários</h2><p>O ranking do reino, do rank F ao SS. Atualizado toda semana pelo Cronista. Os 5 primeiros aparecem no próximo episódio.</p></div>
+ <div class="sh reveal"><div class="sk">Ranking de Valdreinor</div><h2>Os moradores mais lendários</h2><p>Ofícios e classes, com XP e rank do F ao SS. Cada missão cumprida no reino vale XP, contabilizado pelo Ministério das Finanças. Os primeiros aparecem nos episódios.</p></div>
  <div class="pod" id="pod"></div>
- <div class="box rlist" id="rlist"></div>
- <div class="box comoren reveal"><h3>Como ganhar Renome</h3><div class="pts" id="pts"></div>
+ <div class="rboards"><div class="box rboard of reveal"><h3>RANKING DE OFÍCIOS</h3><div id="rof"></div></div><div class="box rboard cl reveal"><h3>RANKING DE CLASSES</h3><div id="rcl"></div></div></div>
+ <div class="box comoren reveal"><h3>Como subir no ranking</h3><div class="pts" id="pts"></div>
  <div class="ranks" id="ranks"></div></div>
 </div></section>
 <section id="lore"><div class="wrap">
@@ -496,7 +496,7 @@ const ICONS={
 const PAL={k:'#0a0810',H:'#3b2414',f:'#e8b48a',B:'#2f6acf',R:'#c22a2a',P:'#efe1b8',L:'#8a6a42',Y:'#ffd166',G:'#5aa040',d:'#7a5f3d',W:'#f3eee0',D:'#2c2a3a',O:'#b5732a',S:'#8a90a0'};
 function icon(name,s=6){const rows=ICONS[name],c=document.createElement('canvas');const w=Math.max(...rows.map(r=>r.length));c.width=w*s;c.height=rows.length*s;c.className='ic';const g=c.getContext('2d');rows.forEach((r,j)=>[...r].forEach((k,i)=>{if(PAL[k]){g.fillStyle=PAL[k];g.fillRect(i*s,j*s,s,s)}}));return c}
 // ---------- nav ----------
-const NAV=[['inicio','Início','castelo'],['taverna','A Taverna','taverna'],['moradores','Moradores','moradores'],['renome','Renome','coroa'],['lore','Lore','lore'],['mapa','Mapa','mapa'],['jogo','Ande pela vila','castelo'],['episodios','Episódios','episodios'],['carta','Sua carta','carta'],['sugestoes','Sugestões','sugestoes'],['perguntas','Perguntas','perguntas'],['governo','O Governo','coroa'],['fanart','Fan art','carta'],['apoiar','Apoiar','apoiar']];
+const NAV=[['inicio','Início','castelo'],['taverna','A Taverna','taverna'],['moradores','Moradores','moradores'],['renome','Ranking','coroa'],['lore','Lore','lore'],['mapa','Mapa','mapa'],['jogo','Ande pela vila','castelo'],['episodios','Episódios','episodios'],['carta','Sua carta','carta'],['sugestoes','Sugestões','sugestoes'],['perguntas','Perguntas','perguntas'],['governo','O Governo','coroa'],['fanart','Fan art','carta'],['apoiar','Apoiar','apoiar']];
 const nl=document.getElementById('navlist'),fn=document.getElementById('footnav');
 NAV.forEach(([id,l,ic])=>{const a=document.createElement('a');a.href='#'+id;a.appendChild(icon(ic,2));a.append(l);nl.appendChild(a);fn.insertAdjacentHTML('beforeend',`<a href="#${id}">${l}</a>`)});
 // ---------- contador ----------
@@ -507,6 +507,7 @@ const M=[
  ['Goldrath','Rei de Valdreinor','Linhagem dos domadores de dragão','','p_goldrath2','conselho','Rei','desde os primórdios'],
  ['Antônio','Comandante do Exército','Berserker · machado de duas mãos','','p_antonio','conselho','Conselho','2'],
  ['César','General de Valdreinor','“O Conquistador”','','p_cesar','conselho','General',''],
+ ['Weslley','General de Valdreinor','Voa com Mórak · inteligência do reino','','c_guerreiro','conselho','General',''],
  ['Edu, o Guardião','Guarda Real e Conselheiro do Rei','Tank','','c_tank','conselho','Conselho','3'],
  ['Jock, o Arqueiro','Conselheiro do Rei · fundador da OCF','Arqueiro','','p_jock','conselho','Conselho','5'],
  ['Nathan, o Mercador','Ministro das Finanças','Mercador','','c_mercador','conselho','Conselho','3'],
@@ -516,10 +517,16 @@ const M=[
  ['Pedro','Subalterno da Mineração','Minerador','','c_minerador','ordem','',''],
  ['Brennin, o Marceneiro','Marceneiro','','','c_ferreiro','ordem','','3'],
  ['Nock','Ferreiro','','','c_ferreiro','ordem','','3'],
- ['Tarlles','Alquimista','Alquimista','','p_tarlles','ordem','','1'],
- ['Gabe','Clérigo da Paz','Auxilia os desamparados · arte: @mnkz23','','p_gabe','ordem','','1'],
+ ['Tarlles','Alquimista','Magias de suporte e ataque · poções de cura','','p_tarlles','ordem','','1'],
+ ['Gabe','Clérigo da Paz','Auxilia os desamparados · arte: @mnkz23','@gabeschossler','p_gabe','ordem','','1'],
  ['Alek','Chefe da Guilda','Mago','','p_alek','ordem','','1'],
- ['Payko','Meio elfo espadachim','Espadachim · sabe um pouco de magia','','p_payko','seguidor','',''],
+ ['Payko','Meio elfo espadachim','Espadachim · magia elétrica','@pedrohenrique14456','p_payko','seguidor','',''],
+ ['Tenshi','Meio-dragão branco','Ranger · arco, duas lâminas e magia de gelo','@raphaelsardou','p_tenshi','seguidor','',''],
+ ['Adrian','Ferreiro meio-gigante','Forja com ferro negro','@adrianshout','p_adrian','seguidor','',''],
+ ['Joalison','O Mago Sombrio','Mago · sonha em ser o Rei Mago','','p_joalison','seguidor','',''],
+ ['Isaque','Porteiro da Igreja','Guarda a porta da igreja do pregador Estevan','@fanclubedo_isaque','p_isaque','seguidor','',''],
+ ['Genésio','Caçador de Recompensas','Caçador','','p_genesio'],
+ ['Aslan Morgan','Domador de Dragões','Cabelos negros e armadura de ferro negro','','c_guerreiro','seguidor','',''],
  ['Duda','Viajante dos Ares','Domadora de dragão','@duda','p_duda','seguidor','',''],
  ['Itallo','Mago Bondoso','Mago','@itallo_kelvin','c_mago','seguidor','',''],
  ['Robert','Thor, Filho de Zeus','Guerreiro','@robert_20m','c_guerreiro','seguidor','',''],
@@ -572,7 +579,7 @@ document.getElementById('pedidos').innerHTML=PED.map(([l,r])=>`<div><b>${M.filte
 const ST=[['episodios','5','episódios feitos'],['castelo',MORADORES_TOTAL.toLocaleString('pt-BR'),'moradores (seguidores)'],['balao','575','comentários'],['moradores',String(M.length),'personagens com nome'],['coracao','+1.200','curtidas no total'],['olho','+33 mil','visualizações']];
 document.getElementById('stats').innerHTML='';ST.forEach(([ic,v,k])=>{const d=document.createElement('div');d.className='box stat reveal';d.appendChild(icon(ic,7));d.insertAdjacentHTML('beforeend',`<div class="v">${v}</div><div class="k">${k}</div>`);document.getElementById('stats').appendChild(d)});
 // ---------- explore ----------
-const EX=[['moradores','Moradores','Todos os personagens com nome e o @ de cada um. Procure o seu.',''],['lore','Lore','A história de Valdreinor desde a pedra antiga: da fogueira até o dragão.',''],['mapa','Mapa','O reino visto de cima e os cinco lugares que ninguém entende.',''],['episodios','Episódios','Todos os episódios em ordem, com quantos moradores tinha em cada um.',''],['carta','Sua carta','Monte seu morador, sorteie a carta e baixe para o story.','hl'],['sugestoes','Sugestões','Quer ser um personagem? Tem uma ideia? Deixe na caixa da praça.',''],['perguntas','Perguntas','Como entrar na história, por que você ainda não apareceu e mais.',''],['renome','Mural de Renome','O ranking do reino, do rank F ao SS. Veja quem são os moradores mais lendários.',''],['governo','O Governo','O rei, o conselho, os decretos e o histórico das eleições.',''],['fanart','Fan art','As artes que os moradores fizeram de Valdreinor.',''],['jogo','Ande pela vila','Uma prévia do futuro jogo: passeie pelo reino com o seu boneco.',''],['apoiar','Apoiar','Ajude a manter a Pedra das Runas acesa. Valdreinor continua de graça.','fire']];
+const EX=[['moradores','Moradores','Todos os personagens com nome e o @ de cada um. Procure o seu.',''],['lore','Lore','A história de Valdreinor desde a pedra antiga: da fogueira até o dragão.',''],['mapa','Mapa','O reino visto de cima e os cinco lugares que ninguém entende.',''],['episodios','Episódios','Todos os episódios em ordem, com quantos moradores tinha em cada um.',''],['carta','Sua carta','Monte seu morador, sorteie a carta e baixe para o story.','hl'],['sugestoes','Sugestões','Quer ser um personagem? Tem uma ideia? Deixe na caixa da praça.',''],['perguntas','Perguntas','Como entrar na história, por que você ainda não apareceu e mais.',''],['renome','Ranking','Ranking de ofícios e de classes, com XP e rank do F ao SS.',''],['governo','O Governo','O rei, o conselho, os decretos e o histórico das eleições.',''],['fanart','Fan art','As artes que os moradores fizeram de Valdreinor.',''],['jogo','Ande pela vila','Uma prévia do futuro jogo: passeie pelo reino com o seu boneco.',''],['apoiar','Apoiar','Ajude a manter a Pedra das Runas acesa. Valdreinor continua de graça.','fire']];
 const exc=document.getElementById('explore-cards');EX.forEach(([id,t,p,k])=>{const a=document.createElement('a');a.href='#'+id;a.className='box ex reveal '+k;a.appendChild(icon(id,8));a.insertAdjacentHTML('beforeend',`<h3>${t}</h3><p>${p}</p>`);exc.appendChild(a)});
 // ---------- lore ----------
 const CAP=[
@@ -650,12 +657,15 @@ document.getElementById('metas').innerHTML=MT.map(([v,t,p],i)=>`<div class="meta
  const f=document.getElementById('rfill'),g=document.getElementById('rglow');setTimeout(()=>{f.style.width=(k*100)+'%';g.style.left=`calc(${k*100}% - 3px)`;g.style.transition='left 1.6s cubic-bezier(.2,.8,.2,1)'},400);
  document.getElementById('shareB').onclick=async()=>{const d={title:'O Reino de Valdreinor',text:`Faltam ${alvo-MORADORES_TOTAL} moradores para a próxima runa de Valdreinor acender! Entra pro reino:`,url:location.href};try{if(navigator.share)await navigator.share(d);else{await navigator.clipboard.writeText(d.text+' '+d.url);document.getElementById('shareB').textContent='Link copiado ✓'}}catch(e){}}})();
 // ---------- mural de renome ----------
-// Preencha toda semana: [nome, @, rank, pontos, imagem opcional]
-const RENOME=[];
-const pod=document.getElementById('pod'),rl=document.getElementById('rlist');
-[1,0,2].forEach(i=>{const r=RENOME[i];pod.insertAdjacentHTML('beforeend',`<div class="p${i+1}"><div class="av">${r&&r[4]?`<img src="${src(r[4])}" alt="">`:(i+1)+'º'}</div><div class="st"><b>${r?esc(r[0]):'???'}</b><span>${r?r[2]+' · '+r[3]+' pts':'aguardando o primeiro mural'}</span></div></div>`)});
-rl.innerHTML=RENOME.length>3?RENOME.slice(3,10).map((r,i)=>`<div class="rrow"><span class="p">${i+4}</span><span class="n">${esc(r[0])} <small style="color:var(--vio)">${r[1]}</small></span><span class="r">${r[2]}</span><span class="x">${r[3]} pts</span></div>`).join(''):'<p class="cancel" style="padding:14px 0">O primeiro Mural de Renome sai no domingo. Comece a juntar pontos agora: comente, vote, compartilhe e participe da Taverna.</p>';
-document.getElementById('pts').innerHTML=[['Comentar a ficha completa do personagem','+1'],['Votar nas decisões do reino','+1'],['Compartilhar o episódio nos stories marcando @valdreinor','+2'],['Cumprir a missão da semana','+3'],['Participar da Taverna (grupo dos moradores)','+1']].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('');
+// Atualize quando sair um ranking novo: [nome, ofício/classe, XP, rank, imagem opcional]
+const R_OF=[['Goldrath','Rei',1000,'A','p_goldrath2'],['Brennin','Marceneiro',930,'B','c_ferreiro'],['Tobum','Minerador',920,'B','p_tobum'],['Antônio','Comandante',700,'B'],['Jock','Conselheiro',700,'B'],['Mikael','Agricultor',700,'B'],['Nathan','Mercador',700,'B'],['Edu Lopes','Conselheiro',450,'D'],['Alek','Chefe de Guilda',0,'F'],['Nock','Ferreiro',0,'F'],['Pedro','Minerador',0,'F']];
+const R_CL=[['Antônio','Berserker',790,'B'],['Nicollas','Cronomante',450,'D'],['Gabe','Clérigo',20,'F'],['Alek','Mago',0,'F'],['Edu Lopes','Tank',0,'F'],['Goldrath','Domador de Dragão',0,'F'],['Jock','Arqueiro',0,'F'],['Tarlles','Alquimista',0,'F']];
+const RENOME=R_OF;
+const pod=document.getElementById('pod');
+[1,0,2].forEach(i=>{const r=RENOME[i];pod.insertAdjacentHTML('beforeend',`<div class="p${i+1}"><div class="av">${r&&r[4]?`<img src="${src(r[4])}" alt="">`:(i+1)+'º'}</div><div class="st"><b>${r?esc(r[0]):'???'}</b><span>${r?esc(r[1])+'<br>'+r[3]+' · '+r[2]+' XP':''}</span></div></div>`)});
+const rrows=L=>L.map((r,i)=>`<div class="rrow"><span class="p">${i+1}</span><span class="n">${esc(r[0])}<small>${esc(r[1])}</small></span><span class="r">${r[3]}</span><span class="x">${r[2]} XP</span></div>`).join('');
+document.getElementById('rof').innerHTML=rrows(R_OF);document.getElementById('rcl').innerHTML=rrows(R_CL);
+document.getElementById('pts').innerHTML=[['Cumprir missões da Guilda dos Aventureiros e do reino','XP'],['Comentar a ficha completa do personagem','+1'],['Votar nas decisões do reino','+1'],['Compartilhar o episódio nos stories marcando @valdreinor','+2'],['Cumprir a missão da semana','+3'],['Participar da Taverna (grupo dos moradores)','+1']].map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join('');
 document.getElementById('ranks').innerHTML=['F','E','D','C','B','A','S','SS'].map(x=>`<span>${x}</span>`).join('');
 // ---------- governo ----------
 const CON=[['p_goldrath2','Rei Goldrath','Rei de Valdreinor · eleito em 03/11/2026','rei'],['p_antonio','Antônio','Comandante do Exército · Conselheiro',''],['p_cesar','César','General de Valdreinor',''],['c_tank','Edu, o Guardião','Guarda Real · Conselheiro do Rei',''],['p_jock','Jock, o Arqueiro','Conselheiro do Rei',''],['c_mercador','Nathan','Ministro das Finanças',''],['p_nicollas','Nicollas','Ministro da Magia',''],['p_molina','Molina','O Rei Louco · exilado','x']];
@@ -770,7 +780,7 @@ document.getElementById('fgrid').innerHTML=(FANART.length?FANART.map(([f,n,a])=>
 // ---------- páginas ----------
 (function(){const HOME=['inicio','taverna','runabar','como','numeros','agora','explore'];
  const secs=[...document.querySelectorAll('body > section, body > div.hero')];
- const NOMES={moradores:'Livro dos Moradores',renome:'Mural de Renome',lore:'A história',mapa:'O mapa',jogo:'Ande pela vila',episodios:'Episódios',carta:'Sua carta',sugestoes:'Caixa da praça',perguntas:'Perguntas',governo:'O Governo',fanart:'Fan art',apoiar:'Apoiar'};
+ const NOMES={moradores:'Livro dos Moradores',renome:'Ranking do reino',lore:'A história',mapa:'O mapa',jogo:'Ande pela vila',episodios:'Episódios',carta:'Sua carta',sugestoes:'Caixa da praça',perguntas:'Perguntas',governo:'O Governo',fanart:'Fan art',apoiar:'Apoiar'};
  function rota(){const id=(location.hash||'#inicio').slice(1);const home=!NOMES[id];
   secs.forEach(el=>el.classList.toggle('pgoff',home?!HOME.includes(el.id):el.id!==id));
   document.getElementById('voltar').style.display=home?'none':'block';document.getElementById('vtit').textContent=NOMES[id]||'';
