@@ -229,6 +229,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
 .mural{margin-top:22px;padding:24px;border-style:dashed;border-color:var(--gold2)}
 .mural ol{list-style:none;counter-reset:m;display:grid;gap:10px;max-width:560px;margin:0 auto}
 .mural li{counter-increment:m;display:flex;gap:12px;font-size:16px}
+.mnomes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}.mnomes div{display:flex;align-items:center;gap:10px;background:rgba(255,209,102,.08);border:3px solid var(--gold2);padding:10px 14px}.mnomes b{font:700 18px 'Pixelify Sans';color:var(--gold)}.mnomes small{display:block;color:var(--mut);font-size:13px}.mnomes .nv{font:9px Silkscreen;letter-spacing:.1em;color:#2a1a00;background:var(--gold);padding:3px 6px}
+.selo{display:inline-block;margin-top:4px;font:9px Silkscreen;letter-spacing:.08em;color:#2a1a00;background:linear-gradient(#ffd166,#e8a83a);padding:3px 6px;box-shadow:0 0 0 2px #000}
 .mural li:before{content:counter(m);font:700 22px 'Pixelify Sans';color:var(--gold);min-width:22px}
 .cancel{text-align:center;color:var(--mut);font-size:14px;margin-top:14px}
 /* taverna */
@@ -460,7 +462,7 @@ footer small{color:#6e6684;font-size:12px}
  <div class="box metas reveal"><h3>As metas do reino</h3><p class="cancel" style="margin:-6px 0 14px">É a soma de todos os apoios do mês. Cada vez que o reino chega num valor, uma coisa nova acontece.</p><div id="metas"></div></div>
  <div class="box mural reveal"><h3>🏆 Mural dos apoiadores</h3>
   <ol><li>Apoie no Apoia.se, em qualquer plano.</li><li>Mande no Instagram da @valdreinor o seu nome de morador.</li><li>Em até 7 dias seu nome entra no mural e no Livro dos Moradores com o selo de apoiador.</li></ol>
-  <p class="cancel" style="margin-top:18px">O mural ainda está vazio. O primeiro nome pode ser o seu.</p></div>
+  <div id="muralNomes" class="mnomes"></div><p class="cancel" style="margin-top:14px">Obrigado por manter a fogueira de Valdreinor acesa.</p></div>
  <div class="cta"><a class="btn apoiar" target="_blank" rel="noopener">🔥 Apoiar no Apoia.se</a></div>
  <p class="cancel">Cancelar é quando quiser, direto no Apoia.se.</p>
 </div></section>
@@ -571,14 +573,17 @@ const src=k=>IMG+k+(k.startsWith('c_')?'.jpg':'.png');
 let verTudo=false;let grp='todos';const grid=document.getElementById('grid'),q=document.getElementById('q'),filt=document.getElementById('filt'),empty=document.getElementById('empty');
 GRP.forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(k==grp?' on':'');b.textContent=l;b.onclick=()=>{grp=k;[...filt.children].forEach(x=>x.classList.toggle('on',x===b));render()};filt.appendChild(b)});
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// apoiadores do Apoia.se: nome do morador → plano
+const APOIO={'Super Freito':'Tocha'};
 function render(){const s=q.value.trim().toLowerCase();grid.innerHTML='';let n=0;
  const lista=M.filter(m=>(grp=='todos'||m[5]==grp)&&(!s||m.slice(0,4).join(' ').toLowerCase().includes(s)));const lim=(verTudo||s||grp!='todos')?lista.length:12;document.getElementById('maisB').style.display=lista.length>lim?'inline-flex':'none';document.getElementById('maisB').textContent=`Ver todos os ${lista.length} moradores`;lista.slice(0,lim).forEach(m=>{n++;
   const ph=m[4]?`<div class="ph${m[4].startsWith('p_')?' sq':''}"><img src="${src(m[4])}" alt=""></div>`:`<div class="ph"><div class="q">?</div></div>`;
   const tg=m[6]?`<span class="tag${m[5]=='banido'?' r':m[6]=='OCF'?' o':''}">${m[6]}</span>`:'';
   const dias=m[7]?`<em>⏳ ${m[7]=='desde os primórdios'?'no reino desde os primórdios':m[7]+(m[7]=='1'?' dia':' dias')+' no reino'}</em>`:'';
-  grid.insertAdjacentHTML('beforeend',`<div class="box mor" style="position:relative">${tg}${ph}<div class="tx"><b>${esc(m[0])}</b><i>${esc(m[1])}</i>${m[2]?`<em>${esc(m[2])}</em>`:''}${dias}${m[3]?`<small>${m[3]}</small>`:''}</div></div>`)});
+  grid.insertAdjacentHTML('beforeend',`<div class="box mor" style="position:relative">${tg}${ph}<div class="tx"><b>${esc(m[0])}</b><i>${esc(m[1])}</i>${m[2]?`<em>${esc(m[2])}</em>`:''}${dias}${m[3]?`<small>${m[3]}</small>`:''}${APOIO[m[0]]?`<span class="selo">🔥 Apoiador · ${APOIO[m[0]]}</span>`:''}</div></div>`)});
  empty.style.display=n?'none':'block'}
 q.oninput=render;render();
+(function(){const el=document.getElementById('muralNomes');if(!el)return;Object.entries(APOIO).forEach(([n,pl])=>{const m=M.find(x=>x[0]===n);el.insertAdjacentHTML('beforeend',`<div><span class="nv">🔥 ${esc(pl)}</span><span><b>${esc(n)}</b><small>${m?esc(m[1]):''}</small></span></div>`)})})();
 // pedidos por classe (contagem do livro)
 const PED=[['Guerreiros e soldados',/guerr|berserk|tank|comand|general|guarda|cavaleiro|aventur/i],['Magos e místicos',/mag|crono|necro|clér|fada|alquim|feitic|preg/i],['Exploradores e viajantes',/explor|viajant|espi|arque|florest/i],['Artesãos e ferreiros',/ferr|marcen|minera|constru/i],['Agricultores e mercadores',/agricul|fazend|mercad|pesca|cavalos/i]];
 document.getElementById('pedidos').innerHTML=PED.map(([l,r])=>`<div><b>${M.filter(m=>r.test(m[1]+' '+m[2])).length}</b><span>${l}</span></div>`).join('');
