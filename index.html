@@ -237,6 +237,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
 .tv>img{width:170px;height:170px;border:4px solid #000;flex:none;object-fit:cover}
 .tv h2{font:700 clamp(28px,5vw,42px)/1.1 'Pixelify Sans';margin:6px 0 10px}
 .tv p{font-size:16px;margin-bottom:16px}.tv .nota{font-size:13px;color:var(--mut);margin:12px 0 0}
+.cidsec{padding:56px 0;background:radial-gradient(ellipse at 50% 0,#2a1410,#121014 70%);border-top:4px solid var(--line);border-bottom:4px solid var(--line)}
+.cid{position:relative;max-width:1000px;margin:0 auto;border:4px solid #000;box-shadow:0 0 0 4px var(--gold2),0 24px 60px rgba(0,0,0,.6);overflow:hidden;background:#121014}
+.cid>img{display:block;width:100%;aspect-ratio:1200/720;object-fit:cover}
+.cid .tx{position:absolute;left:0;right:0;bottom:0;padding:70px 26px 24px;background:linear-gradient(to top,rgba(12,9,14,.97) 45%,rgba(12,9,14,0))}
+.cid .sk{color:var(--gold);font-size:12px}.cid h2{font:700 clamp(28px,5vw,44px)/1.08 'Pixelify Sans';margin:6px 0 10px}.cid p{font-size:16px;max-width:640px;margin-bottom:16px}
+.cid .bts{display:flex;gap:10px;flex-wrap:wrap}.cid .nota{font-size:13px;color:var(--mut);margin:12px 0 0}
+@media(max-width:700px){.cid .tx{position:static;padding:20px 18px;background:#1b1720}}
 .rbar{padding:22px;border-color:var(--gold2)}
 .rtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}.rtop .sk{color:var(--gold);font-size:12px}.rtop b{font:400 14px/1.6 'Press Start 2P'}
 .track{position:relative;height:28px;background:#0b0912;border:4px solid var(--line);margin-top:12px;overflow:hidden}
@@ -304,6 +311,14 @@ footer small{color:#6e6684;font-size:12px}
  <div class="cta"><a class="btn" href="/reino.html">🏰 Entrar na cidade</a><a class="btn g" href="https://chat.whatsapp.com/FdYMKoxYrxCLLlGaxgvGdb" target="_blank" rel="noopener">🍺 Entrar na Taverna</a><a class="btn g" href="#moradores">Ver os moradores</a><a class="btn g" href="#carta">Fazer minha carta</a></div>
 </div></div>
 
+<section id="cidade" class="cidsec"><div class="wrap">
+ <div class="cid reveal"><img src="cidade_site.jpg" alt="A cidade de Valdreinor com os moradores andando pela praça" loading="lazy">
+  <div class="tx"><div class="sk">🏰 A cidade de Valdreinor</div>
+  <h2>Os portões da cidade estão abertos</h2>
+  <p>Cada seguidor é um morador. Entre com o seu @, monte o seu personagem e ande pela cidade junto com os outros moradores: escolha a sua casa, faça missões em grupo, abra o seu comércio e junte Valdins.</p>
+  <div class="bts"><a class="btn" href="/reino.html">🏰 Entrar na cidade</a></div>
+  <p class="nota">Já é personagem da história? No cadastro, escolha o seu nome: a sua aparência continua a mesma.</p></div></div>
+</div></section>
 <section id="taverna" class="taverna" style="padding:48px 0"><div class="wrap">
  <div class="box tv reveal"><img src="https://raw.githubusercontent.com/benhurinvite-boop/valdreinor/main/p_cronista.png" alt="O Cronista">
   <div><div class="sk" style="color:var(--gold);font-size:12px">🍺 Taverna da Pedra Antiga</div>
@@ -496,7 +511,7 @@ const ICONS={
 const PAL={k:'#0a0810',H:'#3b2414',f:'#e8b48a',B:'#2f6acf',R:'#c22a2a',P:'#efe1b8',L:'#8a6a42',Y:'#ffd166',G:'#5aa040',d:'#7a5f3d',W:'#f3eee0',D:'#2c2a3a',O:'#b5732a',S:'#8a90a0'};
 function icon(name,s=6){const rows=ICONS[name],c=document.createElement('canvas');const w=Math.max(...rows.map(r=>r.length));c.width=w*s;c.height=rows.length*s;c.className='ic';const g=c.getContext('2d');rows.forEach((r,j)=>[...r].forEach((k,i)=>{if(PAL[k]){g.fillStyle=PAL[k];g.fillRect(i*s,j*s,s,s)}}));return c}
 // ---------- nav ----------
-const NAV=[['inicio','Início','castelo'],['taverna','A Taverna','taverna'],['moradores','Moradores','moradores'],['renome','Ranking','coroa'],['lore','Lore','lore'],['mapa','Mapa','mapa'],['jogo','Ande pela vila','castelo'],['episodios','Episódios','episodios'],['carta','Sua carta','carta'],['sugestoes','Sugestões','sugestoes'],['perguntas','Perguntas','perguntas'],['governo','O Governo','coroa'],['fanart','Fan art','carta'],['apoiar','Apoiar','apoiar']];
+const NAV=[['inicio','Início','castelo'],['cidade','Entrar na cidade','castelo'],['taverna','A Taverna','taverna'],['moradores','Moradores','moradores'],['renome','Ranking','coroa'],['lore','Lore','lore'],['mapa','Mapa','mapa'],['jogo','Ande pela vila','castelo'],['episodios','Episódios','episodios'],['carta','Sua carta','carta'],['sugestoes','Sugestões','sugestoes'],['perguntas','Perguntas','perguntas'],['governo','O Governo','coroa'],['fanart','Fan art','carta'],['apoiar','Apoiar','apoiar']];
 const nl=document.getElementById('navlist'),fn=document.getElementById('footnav');
 NAV.forEach(([id,l,ic])=>{const a=document.createElement('a');a.href='#'+id;a.appendChild(icon(ic,2));a.append(l);nl.appendChild(a);fn.insertAdjacentHTML('beforeend',`<a href="#${id}">${l}</a>`)});
 // ---------- contador ----------
@@ -778,7 +793,7 @@ document.getElementById('fgrid').innerHTML=(FANART.length?FANART.map(([f,n,a])=>
  for(let i=0;i<70;i++)P.push(nova(Math.random()*H));
  (function loop(t){g.clearRect(0,0,W,H);P.forEach((p,i)=>{p.y-=p.v;p.x+=Math.sin(t/900+p.o)*.4;const k=Math.max(0,Math.min(1,p.y/H));g.fillStyle=`rgba(${p.c},${p.a*k})`;const s=Math.round(p.r*2);g.fillRect(Math.round(p.x),Math.round(p.y),s,s);if(Math.random()<.02){g.fillStyle=`rgba(255,240,200,${.5*k})`;g.fillRect(Math.round(p.x)-1,Math.round(p.y)-1,s+2,s+2)}if(p.y<-10)P[i]=nova()});requestAnimationFrame(loop)})(0)})();
 // ---------- páginas ----------
-(function(){const HOME=['inicio','taverna','runabar','como','numeros','agora','explore'];
+(function(){const HOME=['inicio','cidade','taverna','runabar','como','numeros','agora','explore'];
  const secs=[...document.querySelectorAll('body > section, body > div.hero')];
  const NOMES={moradores:'Livro dos Moradores',renome:'Ranking do reino',lore:'A história',mapa:'O mapa',jogo:'Ande pela vila',episodios:'Episódios',carta:'Sua carta',sugestoes:'Caixa da praça',perguntas:'Perguntas',governo:'O Governo',fanart:'Fan art',apoiar:'Apoiar'};
  function rota(){const id=(location.hash||'#inicio').slice(1);const home=!NOMES[id];
