@@ -115,6 +115,10 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
 .stat3 div{background:#fbf3dd;border:2px solid #c9ad78;text-align:center;padding:10px 4px}.stat3 b{display:block;font:14px 'Press Start 2P';color:var(--red)}.stat3 small{font:12px 'Pixelify Sans';color:var(--ink2)}
 
 #hud{bottom:max(22px,env(safe-area-inset-bottom))}
+#bFala{pointer-events:auto;flex:none;width:48px;min-height:46px;border:1px solid var(--line);border-radius:12px;background:#1b1720ee;font-size:21px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#falaBar{position:absolute;left:10px;right:10px;bottom:calc(max(22px,env(safe-area-inset-bottom)) + 62px);z-index:6;display:none;gap:8px}#falaBar.on{display:flex}
+#falaBar input{flex:1;background:#1b1720f5;color:#efe6d8;border:1px solid var(--gold2);border-radius:10px;font:16px system-ui,sans-serif;padding:11px 12px}
+#falaBar button{border:0;border-radius:10px;background:var(--cta);color:#fff;font:600 14px system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:0 16px}
 #menu{background:rgba(0,0,0,.25)}
 </style></head>
 <body>
@@ -175,7 +179,8 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
   <button class="ib" id="bAv" title="Avisos">🔔<i id="avN"></i></button><button class="ib" id="bMenu" title="Menu">☰<i id="mnN"></i></button></div>
  <canvas id="cv"></canvas>
  <div id="place"></div><div id="coins"></div>
- <div id="hud"><div id="hudt"></div><button id="act">Entrar</button></div>
+ <div id="falaBar"><input id="falaIn" maxlength="100" placeholder="Fale com quem está na cidade…" autocomplete="off"><button id="falaOk">Falar</button></div>
+ <div id="hud"><button id="bFala" title="Falar">💬</button><div id="hudt"></div><button id="act">Entrar</button></div>
 </section>
 
 <!-- ============ MENU ============ -->
@@ -253,6 +258,7 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
  const me=()=>D.moradores.find(m=>m.conta===D.me);const byA=a=>{const m=D.moradores.find(x=>x.arroba===arr(a)&&x.status==='aprovado');if(!m)throw new Error('Morador @'+arr(a)+' não encontrado no reino');return m};
  const apr=()=>{const m=me();if(!m||m.status!=='aprovado')throw new Error('Você ainda não entrou no reino');return m};
  const coroa=()=>{const m=me();if(!m||!['coroa','conselho'].includes(m.papel))throw new Error('Só a Coroa pode fazer isso');return m};
+ const guild=()=>{const m=me();if(!m||!(['coroa','conselho'].includes(m.papel)||m.guilda))throw new Error('Só a Coroa ou o Chefe da Guilda podem fazer isso');return m};
  const av=(para,texto)=>D.avisos.push({id:D.seq++,para,texto,criado_em:now()});
  const tx=(de,para,valor,tipo,motivo)=>D.transacoes.push({id:D.seq++,de,para,valor,tipo,motivo:motivo||'',criado_em:now()});
  const ids=a=>[...new Set((a||[]).filter(x=>arr(x)).map(x=>byA(x).id))];
@@ -278,9 +284,12 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
   oferecer_item(a){const m=apr(),d=byA(a.p_para);const i=D.itens.find(x=>x.id===a.p_item&&x.dono===m.id);if(!i)throw new Error('Esse item não é seu');D.ofertas.push({id:D.seq++,item:i.id,vendedor:m.id,comprador:d.id,preco:a.p_preco,status:'aberta',criado_em:now()});av(d.id,'@'+m.arroba+' quer te vender '+i.nome)},
   responder_oferta(a){const m=apr();const o=D.ofertas.find(x=>x.id===a.p_oferta&&x.comprador===m.id&&x.status==='aberta');if(!o)throw new Error('Oferta não encontrada');if(!a.p_aceitar){o.status='recusada';return}if(m.saldo<o.preco&&!a.p_negativo)throw new Error('SALDO_NEGATIVO');const i=D.itens.find(x=>x.id===o.item);const v=D.moradores.find(x=>x.id===o.vendedor);m.saldo-=o.preco;v.saldo+=o.preco;i.dono=m.id;o.status='aceita';tx(m.id,v.id,o.preco,'compra',i.nome)},
   dar_item(a){coroa();const d=byA(a.p_para);D.itens.push({id:D.seq++,dono:d.id,nome:a.p_nome,tipo:a.p_tipo,descricao:a.p_desc,valor:a.p_valor,criador:D.me,preso:false,criado_em:now()})},
-  pedir_missao(a){const m=apr();const mem=ids(a.p_membros);if(!mem.includes(m.id))mem.push(m.id);if(mem.some(ocup))throw new Error('Alguém do grupo já está em missão ou descansando');D.missoes.push({id:D.seq++,tipo:'secundaria',titulo:a.p_titulo,plano:a.p_plano,lider:m.id,membros:mem,recompensa:a.p_recompensa,valdins:0,status:'pedida',diario:'',criado_por:m.id,criado_em:now()});av(null,'Nova missão pedida à Coroa: '+a.p_titulo)},
-  criar_missao_real(a){coroa();const l=byA(a.p_lider).id;const mem=ids(a.p_membros);if(!mem.includes(l))mem.push(l);D.missoes.push({id:D.seq++,tipo:'real',titulo:a.p_titulo,plano:a.p_plano,lider:l,membros:mem,recompensa:a.p_recompensa,valdins:a.p_valdins,status:'aberta',diario:'',criado_por:D.me,criado_em:now()})},
-  decidir_missao(a){coroa();const x=D.missoes.find(m=>m.id===a.p_id);x.status=a.p_ok?'aberta':'recusada';x.valdins=a.p_valdins||0},
+  pedir_missao(a){const m=apr();const mem=ids(a.p_membros);if(!mem.includes(m.id))mem.push(m.id);if(mem.some(ocup))throw new Error('Alguém do grupo já está em missão ou descansando');D.missoes.push({id:D.seq++,tipo:'secundaria',titulo:a.p_titulo,plano:a.p_plano,lider:m.id,membros:mem,recompensa:a.p_recompensa,valdins:0,status:'pedida',diario:'',criado_por:m.id,criado_em:now(),aberta:!!a.p_aberta,vagas:a.p_vagas||0});av(null,'Nova missão pedida à Coroa: '+a.p_titulo)},
+  criar_missao_real(a){guild();const l=byA(a.p_lider).id;const mem=ids(a.p_membros);if(!mem.includes(l))mem.push(l);D.missoes.push({id:D.seq++,tipo:'real',titulo:a.p_titulo,plano:a.p_plano,lider:l,membros:mem,recompensa:a.p_recompensa,valdins:a.p_valdins,status:'aberta',diario:'',criado_por:D.me,criado_em:now()})},
+  entrar_missao(a){const m=apr();const x=D.missoes.find(q=>q.id===a.p_id);if(!x||!['pedida','aberta'].includes(x.status)||!x.aberta)throw new Error('Essa missão não está aceitando gente');if(x.membros.includes(m.id))throw new Error('Você já está nessa missão');if(ocup(m.id))throw new Error('Você já está em outra missão ou descansando');if(x.vagas&&x.membros.length>=x.vagas)throw new Error('As vagas dessa missão acabaram');x.membros.push(m.id)},
+  sair_missao(a){const m=apr();const x=D.missoes.find(q=>q.id===a.p_id);if(!x||x.lider===m.id)throw new Error('O líder não pode sair da própria missão');x.membros=x.membros.filter(u=>u!==m.id)},
+  definir_guilda(a){coroa();byA(a.p_arroba).guilda=!!a.p_on},
+  decidir_missao(a){guild();const x=D.missoes.find(m=>m.id===a.p_id);x.status=a.p_ok?'aberta':'recusada';x.valdins=a.p_valdins||0},
   escrever_diario(a){const x=D.missoes.find(m=>m.id===a.p_id&&m.lider===(me()||{}).id&&m.status==='aberta');if(!x)throw new Error('Só o líder escreve o diário de uma missão aberta');const d=new Date();x.diario+=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} · ${a.p_texto}\n`},
   selar_missao(a){coroa();const x=D.missoes.find(m=>m.id===a.p_id);x.status='selada';x.selada_em=now();x.membros.forEach(u=>{const m=D.moradores.find(y=>y.id===u);m.feitos++;m.saldo+=x.valdins;m.descanso_ate=new Date(Date.now()+3*864e5).toISOString();if(x.valdins)tx(null,u,x.valdins,'recompensa',x.titulo);av(u,'Missão selada: '+x.titulo)})},
   publicar_livro(a){const m=apr();if(a.p_tipo==='cronica'&&!['coroa','conselho'].includes(m.papel))throw new Error('Só a Coroa escreve as crônicas');D.livros.push({id:D.seq++,autor:m.id,titulo:a.p_titulo,tipo:a.p_tipo,conteudo:a.p_conteudo,criado_em:now()})},
@@ -304,6 +313,8 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
 // ================== ESTADO ==================
 const S={auth:null,uid:null,me:null,mor:[],byId:{},itens:[],ofertas:[],missoes:[],livros:[],processos:[],avisos:[],lojas:[],clas:[],tx:[]};
 const coroa=()=>S.me&&['coroa','conselho'].includes(S.me.papel);
+const guildaChefe=()=>S.me&&!coroa()&&!!S.me.guilda;
+const pendGuilda=()=>guildaChefe()?S.missoes.filter(m=>m.status==='pedida').length:0;
 const curto=n=>String(n||'').split(',')[0];const nomeDe=id=>S.byId[id]?curto(S.byId[id].nome):'?';const arDe=id=>S.byId[id]&&S.byId[id].arroba?'@'+S.byId[id].arroba:'';
 async function carregar(){
  S.auth=await API.uid();S.uid=null;if(!S.auth)return;
@@ -314,7 +325,7 @@ async function carregar(){
  atualizaTopo();
 }
 function atualizaTopo(){if(!S.me)return;const ap=S.mor.filter(m=>m.status==='aprovado').length;
- $('topst').innerHTML=`<b>${fmt(ap)}</b> moradores<br>${esc(curto(S.me.nome))}`;
+ const on_=typeof onlineAgora==='function'?onlineAgora():0;$('topst').innerHTML=`<b>${fmt(ap)}</b> moradores${on_?` · <b style="color:#8dfc9c">${on_} online</b>`:''}<br>${esc(curto(S.me.nome))}`;
  $('coins').textContent=fmt(S.me.saldo)+' V';$('coins').style.color=S.me.saldo<0?'#ff6b6b':'';
  const nv=novosAvisos();$('avN').style.display=nv?'flex':'none';$('avN').textContent=nv;
  const pend=pendCoroa()+S.ofertas.filter(o=>o.comprador===S.uid&&o.status==='aberta').length;$('mnN').style.display=pend?'flex':'none';$('mnN').textContent=pend}
@@ -463,6 +474,8 @@ const KM={ArrowUp:'u',KeyW:'u',ArrowDown:'d',KeyS:'d',ArrowLeft:'l',KeyA:'l',Arr
 addEventListener('keydown',e=>{if(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;const k=KM[e.code];if(k&&$('cidade').classList.contains('on')){keys[k]=1;alvo=null;rota_=null;cam.livre=false;e.preventDefault()}if((e.code=='KeyE'||e.code=='Enter')&&acao){acao()}});
 addEventListener('keyup',e=>{const k=KM[e.code];if(k)keys[k]=0});
 let acao=null;$('act').onclick=()=>acao&&acao();
+$('bFala').onclick=()=>{const b=$('falaBar');b.classList.toggle('on');if(b.classList.contains('on'))$('falaIn').focus()};
+const mandaFala=()=>{falar($('falaIn').value);$('falaIn').value='';$('falaBar').classList.remove('on')};$('falaOk').onclick=mandaFala;$('falaIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();mandaFala()}if(e.key==='Escape')$('falaBar').classList.remove('on')});
 const K=()=>cam.k*DPR;
 const vista=()=>{const k=K();return{x:cam.x-cv.width/k/2,y:cam.y-cv.height/k/2,w:cv.width/k,h:cv.height/k}};
 const X=u=>(u*WW-vista().x)*K(),Y=v=>(v*WH-vista().y)*K();
@@ -481,18 +494,18 @@ cv.addEventListener('wheel',e=>{e.preventDefault();if(cena)return;cam.k*=Math.ex
 function toque(e){const r=cv.getBoundingClientRect();const sx=(e.clientX-r.left)*DPR,sy=(e.clientY-r.top)*DPR;
  if(cena){const I=salaAtual;if(!I)return;alvo={x:(sx-I.ox)/I.k,y:(sy-I.oy)/I.k,int:1};return}
  for(const m of visiveis){const s=3*K();if(Math.abs(sx-m.sx)<7*s&&sy<m.sy+2*s&&sy>m.sy-20*s){abrirMorador(m.id);return}}
- const v=vista(),k=K();const tx=(sx/k+v.x)/WW,ty=(sy/k+v.y)/WH;alvo={x:tx,y:ty};cam.livre=false;rota_=caminho(pl.x,pl.y,tx,ty)}
+ const v=vista(),k=K();const tx=(sx/k+v.x)/WW,ty=(sy/k+v.y)/WH;alvo={x:tx,y:ty};cam.livre=false;rota_=caminho(pl.x,pl.y,tx,ty);vivoEnvia(true,tx,ty)}
 function passo(dx,dy,sp){const n=Math.hypot(dx,dy);if(!n)return false;const nx=pl.x+dx/n*sp,ny=pl.y+dy/n*sp*WW/WH;
  if(walk(nx,ny)){pl.x=nx;pl.y=ny}else if(dx&&walk(pl.x+Math.sign(dx)*sp,pl.y))pl.x+=Math.sign(dx)*sp;else if(dy&&walk(pl.x,pl.y+Math.sign(dy)*sp*WW/WH))pl.y+=Math.sign(dy)*sp*WW/WH;else return false;
  pl.dir=Math.abs(dx)>Math.abs(dy)*.8?(dx>0?3:2):(dy>0?0:1);return true}
 let visiveis=[],preso=0,salaAtual=null;
 function npcCor(n,t,h){const base=n.replace(/^Rei /,'').split(',')[0];const m=S.mor.find(q=>q.nome===n||q.nome.split(',')[0]===base);return m?[m.cor||t,m.cabelo||h,m.classe]:[t,h,null]}
-function entrar(nome){const I=INT[nome];if(!I||!SALAS)return;cena=nome;casaInt=null;const S_=SALAS[I.sala];ip={x:S_.entrada[0],y:S_.entrada[1]-6,dir:1,mv:0};alvo=null;if(!intImg[I.sala])intImg[I.sala]=IMG('arte/vald/interiores/'+S_.img)}
+function entrar(nome){const I=INT[nome];if(!I||!SALAS)return;cena=nome;casaInt=null;const S_=SALAS[I.sala];ip={x:S_.entrada[0],y:S_.entrada[1]-6,dir:1,mv:0};alvo=null;if(!intImg[I.sala])intImg[I.sala]=IMG('arte/vald/interiores/'+S_.img);vivoEnvia(true)}
 function salaDaCasa(dono,loja){if(!loja)return dono&&(dono.papel==='coroa'||dono.papel==='conselho')?'casa_rica':'casa_simples';const o=dono.oficio||'';return /Ferreiro/.test(o)?'forja':/Agricultor/.test(o)?'celeiro':/Taverneiro|Cozinheiro/.test(o)?'taverna':/Minerador/.test(o)?'pedras_raras':/Alquimista|Curandeiro/.test(o)?'artefatos':/Caçador/.test(o)?'veterinaria':/Pescador|Mercador/.test(o)?'armazem':/Marceneiro|Construtor/.test(o)?'utensilios':'loja'}
 function entrarCasa(n){const dono=S.mor.find(m=>m.casa===n);const loja=dono&&S.lojas.find(l=>l.dono===dono.id&&l.status==='aberta');
  const nome=loja?loja.nome:'Casa nº '+n;INT[nome]={sala:salaDaCasa(dono,loja),npcs:dono?[[dono.nome,dono.cor,dono.cabelo,loja?`“Bem-vindo à ${loja.nome}! Toque em Ver loja para ver o que tenho.”`:`“Essa é a minha casa.”`]]:[],casa:n,loja:loja?loja.id:null};entrar(nome);casaInt=n}
-function sairInt(){cena=null;casaInt=null;salaAtual=null;const [x,y]=perto_livre(pl.x,pl.y+.006);pl.x=x;pl.y=y;cam.livre=false}
-function loop(){fr++;if(!$('cidade').classList.contains('on')){requestAnimationFrame(loop);return}if(cena)interior();else cidade();requestAnimationFrame(loop)}
+function sairInt(){cena=null;casaInt=null;salaAtual=null;const [x,y]=perto_livre(pl.x,pl.y+.006);pl.x=x;pl.y=y;cam.livre=false;vivoEnvia(true)}
+function loop(){fr++;if(!$('cidade').classList.contains('on')){requestAnimationFrame(loop);return}if(!VIVO.ch&&S.me&&fr%60===1)vivoLiga();vivoAnda();if(cena)interior();else cidade();vivoAposQuadro();requestAnimationFrame(loop)}
 function cidade(){const sp=.00105;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:0)-(keys.u?1:0);pl.mv=0;
  if(!(chao.complete&&chao.naturalWidth&&MASK)){g.fillStyle='#121014';g.fillRect(0,0,cv.width,cv.height);g.fillStyle='#f6d68e';g.font=`${16*DPR}px "MedievalSharp",serif`;g.textAlign='center';g.fillText('Abrindo os portões da cidade…',cv.width/2,cv.height/2);return}
  if(!walk(pl.x,pl.y)){const [x,y]=perto_livre(pl.x,pl.y);pl.x=x;pl.y=y}
@@ -510,11 +523,12 @@ function cidade(){const sp=.00105;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:
  const ents=[];const m0=60;
  for(const p of VC.p){const [fi,id,x,y,base,casa]=p;const r=VC.r[fi][id];if(x>v.x+v.w+m0||x+r[2]<v.x-m0||y>v.y+v.h+m0||base<v.y-m0)continue;ents.push({y:base/WH,p,r,fi,casa})}
  visiveis=[];window.LBL=S.me?[[X(pl.x)-60*DPR,Y(pl.y)-21*3*k-28*DPR,120*DPR,30*DPR]]:[];const nomes=[];
- S.mor.forEach(m=>{if(m.status!=='aprovado'||m.id===S.uid)return;let w=wander[m.id];if(!w||w.bx!==m.x||w.by!==m.y){const [x,y]=perto_livre(m.x||ORIGEM[0],m.y||ORIGEM[1]);w=wander[m.id]={x,y,ox:x,oy:y,bx:m.x,by:m.y,tx:0,ty:0,t:Math.random()*200,dir:0}}
+ S.mor.forEach(m=>{if(m.status!=='aprovado'||m.id===S.uid)return;const rv=VIVO.rem[m.id],vivo=!!(rv&&VIVO.online.has(m.id));if(vivo&&rv.c)return;let w=wander[m.id];if(!w||w.bx!==m.x||w.by!==m.y){const [x,y]=perto_livre(m.x||ORIGEM[0],m.y||ORIGEM[1]);w=wander[m.id]={x,y,ox:x,oy:y,bx:m.x,by:m.y,tx:0,ty:0,t:Math.random()*200,dir:0}}
   if(--w.t<=0){w.t=120+Math.random()*240;const a=Math.random()*6.28;w.tx=Math.cos(a)*.00022;w.ty=Math.sin(a)*.00022;if(Math.random()<.5){w.tx=0;w.ty=0}}
   const nx=w.x+w.tx,ny=w.y+w.ty;let mv=0;if((w.tx||w.ty)&&walk(nx,ny)&&Math.hypot(nx-w.ox,ny-w.oy)<.02){w.x=nx;w.y=ny;mv=1;w.dir=Math.abs(w.tx)>Math.abs(w.ty)?(w.tx>0?3:2):(w.ty>0?0:1)}else{w.tx=w.ty=0}
-  const sx=X(w.x),sy=Y(w.y);if(sx<-80||sx>cv.width+80||sy<-120||sy>cv.height+80)return;visiveis.push({id:m.id,sx,sy});
-  ents.push({y:w.y,draw:()=>{desenha(g,sx,sy,m.cor,m.cabelo,w.dir,mv&&Math.floor(fr/10)%2,'',null,3*k,'',m.classe,m.nome);nomes.push([sx,sy-21*3*k+2*3*k,curto(m.nome),m.papel==='coroa'||m.papel==='conselho'?'#f6d68e':(m.conta?'#f3e8d2':'#cfc3d8'),m.conta&&m.arroba?'@'+m.arroba:''])}})});
+  const px_=vivo?rv.x:w.x,py_=vivo?rv.y:w.y,dr_=vivo?rv.dir:w.dir,mv_=vivo?rv.mv:mv;
+  const sx=X(px_),sy=Y(py_);if(sx<-80||sx>cv.width+80||sy<-120||sy>cv.height+80)return;visiveis.push({id:m.id,sx,sy});
+  ents.push({y:py_,draw:()=>{desenha(g,sx,sy,m.cor,m.cabelo,dr_,mv_&&Math.floor(fr/10)%2,'',null,3*k,'',m.classe,m.nome);nomes.push([sx,sy-21*3*k+2*3*k,curto(m.nome),vivo?'#8dfc9c':(m.papel==='coroa'||m.papel==='conselho'?'#f6d68e':(m.conta?'#f3e8d2':'#cfc3d8')),m.conta&&m.arroba?'@'+m.arroba+(vivo?' · online':''):''])}})});
  if(S.me)ents.push({y:pl.y,me:1,draw:()=>desenha(g,X(pl.x),Y(pl.y),S.me.cor,S.me.cabelo,pl.dir,pl.mv&&Math.floor(fr/8)%2,'',null,3*k,'',S.me.classe,S.me.nome)});
  ents.sort((a,b)=>a.y-b.y);
  for(const e of ents){if(e.draw){e.draw();continue}const [fi,id,x,y]=e.p,r=e.r,hd=VC.hd[fi],im=FOLHA[fi];if(!im.complete||!im.naturalWidth)continue;
@@ -525,16 +539,17 @@ function cidade(){const sp=.00105;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:
  // nomes por cima de tudo (o seu primeiro)
  if(S.me){const L=window.LBL;window.LBL=null;etiqueta(g,X(pl.x),Y(pl.y)-21*3*k+2*3*k,S.me.nome,'#9dffa8','você');window.LBL=L}
  if(k>.55)nomes.forEach(n=>etiqueta(g,...n));
+ visiveis.forEach(v=>{const t=falaDe(v.id);if(t)balao(g,v.sx,v.sy-21*3*k-14*DPR,t)});if(S.me){const t=falaDe(S.uid);if(t)balao(g,X(pl.x),Y(pl.y)-21*3*k-24*DPR,t)}
  // placas dos lugares
  if(k>.4)PINS.forEach(([x,y,t])=>{const sx=X(x/100),sy=Y(y/100);if(sx<-120||sx>cv.width+120||sy<-60||sy>cv.height+200)return;placa(g,sx,sy-22*k,t,perto&&perto.n===t)});
  // HUD
  let txt,lugar=null;
  if(perto&&perto.t==='lugar'){lugar=perto.n;txt=`<b>${esc(perto.n)}</b>${INT[perto.n]?'Toque em Entrar para ver o lado de dentro.':'Um lugar do reino.'}`;acao=INT[perto.n]?()=>entrar(perto.n):null}
  else if(perto&&perto.t==='casa'){const dono=S.mor.find(m=>m.casa===perto.n);const loja=dono&&S.lojas.find(l=>l.dono===dono.id&&l.status==='aberta');lugar='Casa nº '+perto.n;
-  txt=dono?`<b>${loja?esc(loja.nome):'Casa nº '+perto.n}</b>de ${esc(dono.nome)} <span style="color:#cdb6ff">@${esc(dono.arroba)}</span>`:`<b>Casa nº ${perto.n} · casa livre</b>Ninguém mora aqui ainda.${S.me&&!S.me.casa?' Toque em Morar aqui.':''}`;
-  acao=dono?()=>entrarCasa(perto.n):(S.me&&!S.me.casa?()=>escolherCasa(perto.n):null)}
+  txt=dono?`<b>${loja?esc(loja.nome):'Casa nº '+perto.n}</b>de ${esc(dono.nome)} <span style="color:#cdb6ff">@${esc(dono.arroba)}</span>`:`<b>Casa nº ${perto.n} · casa livre</b>Ninguém mora aqui ainda.${S.me?(S.me.casa?' Toque em Mudar para cá.':' Toque em Morar aqui.'):''}`;
+  acao=dono?()=>entrarCasa(perto.n):(S.me?()=>escolherCasa(perto.n):null)}
  else{txt='<b>Valdreinor</b>Toque no chão para andar. Arraste para olhar em volta, dois dedos para aproximar.';acao=null}
- $('act').style.display=acao?'block':'none';$('act').textContent=perto&&perto.t==='casa'&&!S.mor.find(m=>m.casa===perto.n)?'Morar aqui':'Entrar';
+ $('act').style.display=acao?'block':'none';$('act').textContent=perto&&perto.t==='casa'&&!S.mor.find(m=>m.casa===perto.n)?(S.me&&S.me.casa?'Mudar para cá':'Morar aqui'):'Entrar';
  if($('hudt').dataset.k!==txt){$('hudt').innerHTML=txt;$('hudt').dataset.k=txt}
  $('place').style.display=lugar?'block':'none';if(lugar)$('place').textContent=lugar}
 function placa(g,x,y,t,on){const d=DPR;g.font=`${12*d}px "MedievalSharp",serif`;const w=g.measureText(t).width+16*d,h=20*d;
@@ -563,10 +578,11 @@ function interior(){const I=INT[cena];const S_=SALAS[I.sala],im=intImg[I.sala];l
  I.npcs.forEach(([n,t0,h0,fala],i)=>{let x,y;if(i===0&&S_.dono){[x,y]=S_.dono;y+=4}else{const o=S_.dono?i-1:i,n_=I.npcs.length-(S_.dono?1:0),lado=o%2?1:-1,deg=Math.floor(o/2)+1;x=(A0[0]+A0[2])/2+lado*(A0[2]-A0[0])*(.16+.14*deg)*(n_===1&&!S_.dono?0:1);y=A0[1]+(A0[3]-A0[1])*(.38+.1*deg)}
   const [tc,hc,cl]=npcCor(n,t0,h0);const d=Math.hypot(x-ip.x,(y-ip.y)*.8);const noBalcao=i===0&&S_.balcao&&ip.x>=S_.balcao[0]&&ip.x<=S_.balcao[2]&&ip.y>=S_.balcao[1]-4&&ip.y<=S_.balcao[3]+14;
   if((d<46||noBalcao)&&(!talk||d<talk[2]))talk=[n,fala,d];ents.push({y,draw:()=>desenha(g,ox+x*k,oy+y*k,tc,hc,0,0,'',null,s,'',cl||NPC_CLASSE[n],n),nm:[ox+x*k,oy+(y-19*3)*k-2*DPR,n]})});
+ for(const id in VIVO.rem){const r=VIVO.rem[id],m=S.byId[id];if(!m||r.c!==cena||!VIVO.online.has(id))continue;ents.push({y:r.iy,draw:()=>desenha(g,ox+r.ix*k,oy+r.iy*k,m.cor,m.cabelo,r.idir||0,r.mv&&Math.floor(fr/10)%2,'',null,s,'',m.classe,m.nome),nm:[ox+r.ix*k,oy+(r.iy-19*3)*k-2*DPR,curto(m.nome)],vid:id})}
  ents.push({y:ip.y,draw:()=>desenha(g,ox+ip.x*k,oy+ip.y*k,S.me.cor,S.me.cabelo,ip.dir,ip.mv&&Math.floor(fr/8)%2,'',null,s,'',S.me.classe,S.me.nome)});
  for(const [x,y,w,h,base] of S_.frente||[])ents.push({y:base,draw:()=>g.drawImage(im,x,y,w,h,Math.round(ox+x*k),Math.round(oy+y*k),Math.round(w*k),Math.round(h*k))});
  ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
- ents.forEach(e=>{if(e.nm)etiqueta(g,e.nm[0],e.nm[1],e.nm[2],'#f6d68e')});
+ ents.forEach(e=>{if(e.nm)etiqueta(g,e.nm[0],e.nm[1],e.nm[2],e.vid?'#8dfc9c':'#f6d68e');if(e.vid){const t=falaDe(e.vid);if(t)balao(g,e.nm[0],e.nm[1]-18*DPR,t)}});{const t=falaDe(S.uid);if(t)balao(g,ox+ip.x*k,oy+(ip.y-19*3)*k-6*DPR,t)}
  const [p0,p1,p2,p3]=S_.porta;const nearDoor=ip.y>p1-24&&ip.x>p0-20&&ip.x<p2+20;g.fillStyle='rgba(246,214,142,'+(.35+.25*Math.sin(fr/8))+')';g.fillRect(ox+p0*k,oy+(p3-3)*k,(p2-p0)*k,3*k);
  $('place').style.display='block';$('place').textContent=cena;
  let txt,lab='Sair';acao=null;
@@ -576,8 +592,48 @@ function interior(){const I=INT[cena];const S_=SALAS[I.sala],im=intImg[I.sala];l
  if(nearDoor&&!acao)acao=sairInt;
  $('act').style.display=acao?'block':'none';$('act').textContent=acao===sairInt?'Sair':lab;
  if($('hudt').dataset.k!==txt){$('hudt').innerHTML=txt;$('hudt').dataset.k=txt}}
-async function escolherCasa(n){if(!confirm(`Morar na Casa nº ${n}?`))return;try{await API.rpc('escolher_casa',{p_casa:n});await carregar();toast('Agora a Casa nº '+n+' é sua!')}catch(e){toast(e.message)}}
-function irPara(x,y){fecharTudo();if(cena)sairInt();[pl.x,pl.y]=perto_livre(x,y);alvo=null;rota_=null;cam.livre=false;API.rpc('mover',{p_x:pl.x,p_y:pl.y}).catch(()=>{})}
+async function escolherCasa(n){const ant=S.me&&S.me.casa;if(!confirm(ant?`Mudar da Casa nº ${ant} para a Casa nº ${n}? A Casa nº ${ant} fica livre para outro morador.`:`Morar na Casa nº ${n}?`))return;try{await API.rpc('escolher_casa',{p_casa:n});await carregar();toast(ant?'Mudança feita! Agora você mora na Casa nº '+n:'Agora a Casa nº '+n+' é sua!')}catch(e){toast(e.message)}}
+function irPara(x,y){fecharTudo();if(cena)sairInt();[pl.x,pl.y]=perto_livre(x,y);alvo=null;rota_=null;cam.livre=false;API.rpc('mover',{p_x:pl.x,p_y:pl.y}).catch(()=>{});vivoEnvia(true)}
+
+// ================== AO VIVO (Supabase Realtime: quem está online, andando e falando) ==================
+// Barato de propósito: cada um manda só o destino quando toca no chão, a posição a cada ~0,4 s quando anda pelo teclado,
+// e uma batida a cada 20 s. Quem recebe calcula o caminho sozinho, então o boneco anda liso sem mensagem a cada quadro.
+const VIVO={ch:null,on:false,rem:{},online:new Set(),falas:{},ultFala:0,ultEnvio:0,andava:false,andavaInt:false};
+function vivoLiga(){if(DEMO||VIVO.ch||!S.me||!S.uid||S.uid==='-')return;
+ const ch=sb.channel('cidade-valdreinor',{config:{private:true,presence:{key:S.uid},broadcast:{self:false}}});VIVO.ch=ch;
+ ch.on('presence',{event:'sync'},()=>{VIVO.online=new Set(Object.keys(ch.presenceState()));for(const id in VIVO.rem)if(!VIVO.online.has(id))delete VIVO.rem[id];atualizaTopo()});
+ ch.on('presence',{event:'join'},()=>{setTimeout(()=>vivoEnvia(true),300+Math.random()*700)});
+ ch.on('broadcast',{event:'mv'},({payload:p})=>vivoRecebe(p));
+ ch.on('broadcast',{event:'fala'},({payload:p})=>{if(!p||!p.id||typeof p.t!=='string')return;VIVO.falas[p.id]={t:p.t.slice(0,100),ate:performance.now()+7000}});
+ ch.subscribe(async st=>{if(st==='SUBSCRIBED'){VIVO.on=true;await ch.track({id:S.uid,t:Date.now()});vivoEnvia(true)}else if(st==='CLOSED'||st==='CHANNEL_ERROR'||st==='TIMED_OUT'){VIVO.on=false}});
+ setInterval(()=>vivoEnvia(true),20000)}
+function vivoEnvia(forca,tx,ty){if(!VIVO.on||!VIVO.ch)return;const t=performance.now();if(!forca&&t-VIVO.ultEnvio<380)return;VIVO.ultEnvio=t;
+ const p={id:S.uid,x:+pl.x.toFixed(5),y:+pl.y.toFixed(5),d:pl.dir};if(tx!=null){p.tx=+tx.toFixed(5);p.ty=+ty.toFixed(5)}
+ if(cena){p.c=cena;p.ix=Math.round(ip.x);p.iy=Math.round(ip.y);p.id2=ip.dir}
+ VIVO.ch.send({type:'broadcast',event:'mv',payload:p}).catch(()=>{})}
+function vivoRecebe(p){if(!p||!p.id||p.id===S.uid||typeof p.x!=='number')return;let r=VIVO.rem[p.id];
+ if(!r){r=VIVO.rem[p.id]={x:p.x,y:p.y,dir:0,mv:0,rota:null,ix:0,iy:0,itx:0,ity:0}}
+ r.c=p.c||null;r.t=performance.now();
+ if(r.c){r.itx=p.ix;r.ity=p.iy;r.idir=p.id2||0;if(!r.ix&&!r.iy){r.ix=p.ix;r.iy=p.iy}return}
+ if(Math.hypot(r.x-p.x,(r.y-p.y)*WH/WW)>.06){r.x=p.x;r.y=p.y}        // longe demais: pula
+ if(p.tx!=null){r.rota=caminho(r.x,r.y,p.tx,p.ty)||[[p.tx,p.ty]]}else{r.rota=[[p.x,p.y]]}
+ r.dir=p.d||0}
+function vivoAnda(){const sp=.00105;for(const id in VIVO.rem){const r=VIVO.rem[id];r.mv=0;
+ if(r.c){const dx=r.itx-r.ix,dy=r.ity-r.iy,d=Math.hypot(dx,dy);if(d>1){const s=Math.min(d,1.6);r.ix+=dx/d*s;r.iy+=dy/d*s;r.mv=1;r.idir=Math.abs(dx)>Math.abs(dy)?(dx>0?3:2):(dy>0?0:1)}continue}
+ if(!r.rota||!r.rota.length)continue;const [tx,ty]=r.rota[0];const dx=tx-r.x,dy=(ty-r.y)*WH/WW,d=Math.hypot(dx,dy);
+ if(d<.002){r.x=tx;r.y=ty;r.rota.shift();continue}const s=Math.min(d,sp);r.x+=dx/d*s;r.y+=dy/d*s*WW/WH;r.mv=1;r.dir=Math.abs(dx)>Math.abs(dy)*.8?(dx>0?3:2):(dy>0?0:1)}}
+function vivoAposQuadro(){if(!VIVO.on)return;
+ const anda=!cena&&pl.mv;if(anda&&(keys.u||keys.d||keys.l||keys.r))vivoEnvia(false);if(VIVO.andava&&!anda&&!cena)vivoEnvia(true);VIVO.andava=anda;
+ const ai=cena&&ip.mv;if(ai)vivoEnvia(false);if(VIVO.andavaInt&&!ai&&cena)vivoEnvia(true);VIVO.andavaInt=ai}
+function falar(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,100);if(!t)return;const n=performance.now();if(n-VIVO.ultFala<2500){toast('Calma! Espere um pouquinho para falar de novo.');return}VIVO.ultFala=n;
+ VIVO.falas[S.uid]={t,ate:n+7000};if(VIVO.on)VIVO.ch.send({type:'broadcast',event:'fala',payload:{id:S.uid,t}}).catch(()=>{})}
+function balao(g,x,y,t){const d=DPR;g.font=`600 ${12*d}px system-ui,sans-serif`;const L=[];let cur='';for(const w of t.split(' ')){const tt=cur?cur+' '+w:w;if(g.measureText(tt).width>170*d&&cur){L.push(cur);cur=w}else cur=tt}L.push(cur);
+ const w=Math.max(...L.map(l=>g.measureText(l).width))+16*d,h=L.length*15*d+10*d,bx=x-w/2;let by=y-h-10*d;if(balao.fr!==fr){balao.fr=fr;balao.R=[]}for(let i=0;i<6&&balao.R.some(q=>bx<q[0]+q[2]&&q[0]<bx+w&&by<q[1]+q[3]&&q[1]<by+h);i++)by-=h+6*d;balao.R.push([bx,by,w,h]);y=by+h+10*d;
+ g.fillStyle='#fbf3dc';rr(g,bx,by,w,h,8*d);g.fill();g.strokeStyle='#3a1a10';g.lineWidth=1.5*d;g.stroke();
+ g.beginPath();g.moveTo(x-6*d,by+h);g.lineTo(x,by+h+8*d);g.lineTo(x+6*d,by+h);g.closePath();g.fillStyle='#fbf3dc';g.fill();g.stroke();g.fillRect(x-5*d,by+h-2*d,10*d,3*d);
+ g.fillStyle='#2a1a10';g.textAlign='center';L.forEach((l,i)=>g.fillText(l,x,by+16*d+i*15*d))}
+function falaDe(id){const f=VIVO.falas[id];if(!f)return null;if(performance.now()>f.ate){delete VIVO.falas[id];return null}return f.t}
+const onlineAgora=()=>VIVO.online.size;
 
 // ================== MENU ==================
 $('bMenu').onclick=abrirMenu;$('bAv').onclick=()=>abrir('avisos');
@@ -597,6 +653,7 @@ function abrirMenu(){const m=S.me;const ofertas=S.ofertas.filter(o=>o.comprador=
  ${I('🛡️','Clãs','junte 10 @ e peça um castelo','clas')}
  ${I('⚖️','Justiça e avisos','leve um caso à Coroa','justica',novosAvisos()||'')}
  ${I('📚','A biblioteca','livros, grimórios e ideias','biblioteca')}
+ ${guildaChefe()?I('🗡️','Mesa da Guilda','abençoar e convocar missões','guilda',pendGuilda()||'','coroa'):''}
  ${coroa()?I('👑','Sala da Coroa','aprovações, cunhar, julgar','coroa',pendCoroa()||'','coroa'):''}
  ${I('📖','Meu cadastro','editar quem você é','meucad')}
  ${I('🚪','Sair do reino','','sair')}`;
@@ -626,7 +683,7 @@ P.procurar=()=>({t:'Procurar morador',h:`<input id="q" placeholder="nome ou @" a
 function abrirMorador(id){abrir('morador',id)}
 P.morador=id=>{const m=S.byId[id];const cla=S.clas.find(c=>c.membros.includes(id));const feitos=S.missoes.filter(x=>x.status==='selada'&&x.membros.includes(id));
  return{t:m.nome,h:`<div class="card ficha">${m.retrato?`<img class="portrait" src="${esc(m.retrato)}">`:`<canvas data-b="${m.id}" width="112" height="112" style="float:right;width:112px;height:112px;image-rendering:pixelated;background:#cdb98a;border:3px solid #000;margin-left:10px"></canvas>`}
- <h4 style="font-size:22px">${esc(m.nome)}</h4><div class="meta">${m.arroba?'@'+esc(m.arroba):''}${m.titulo?' · '+esc(m.titulo):''}${m.papel!=='morador'?' · '+(m.papel==='coroa'?'Coroa':'Conselho da Coroa'):''}</div>${m.conta?'':'<p class="hint">Este personagem ainda não entrou na cidade. Se ele é seu, crie a sua senha e escolha ele no Livro de Cadastro.</p>'}
+ <h4 style="font-size:22px">${esc(m.nome)}</h4><div class="meta">${m.arroba?'@'+esc(m.arroba):''}${m.titulo?' · '+esc(m.titulo):''}${m.papel!=='morador'?' · '+(m.papel==='coroa'?'Coroa':'Conselho da Coroa'):''}${m.guilda?' · Chefe da Guilda':''}</div>${m.conta?'':'<p class="hint">Este personagem ainda não entrou na cidade. Se ele é seu, crie a sua senha e escolha ele no Livro de Cadastro.</p>'}
  <dl><dt>Classe · Ofício</dt><dd>${esc(m.classe)} · ${esc(m.oficio)}</dd><dt>Quem é</dt><dd>${esc(m.quem)||'—'}</dd><dt>Poderes</dt><dd>${esc(m.poderes)||'—'}</dd><dt>Fraquezas</dt><dd>${esc(m.fraquezas)||'—'}</dd>
  <dt>Ranking</dt><dd>Ofício: rank ${esc(m.rank_oficio||'F')} · ${fmt(m.xp_oficio||0)} XP · Classe: rank ${esc(m.rank_classe||'F')} · ${fmt(m.xp_classe||0)} XP</dd><dt>Casa</dt><dd>${m.casa?'Casa nº '+m.casa:'ainda sem casa'}</dd><dt>Clã</dt><dd>${cla?esc(cla.nome):'—'}</dd><dt>Feitos</dt><dd>${feitos.length?feitos.map(f=>'🏅 '+esc(f.titulo)).join('<br>'):'nenhum ainda'}</dd></dl><div style="clear:both"></div></div>
  ${id!==S.uid&&m.status==='aprovado'?`<button class="btn dark" id="ir">🧭 Ir até ${esc(m.nome)}</button>${m.arroba?'<button class="btn" id="pg">💰 Mandar Valdins</button>':''}`:''}`,on:r=>{const ir=r.querySelector('#ir');if(ir)ir.onclick=()=>{const w=wander[m.id];irPara((w?w.x:m.x)+.004,(w?w.y:m.y))};const pg=r.querySelector('#pg');if(pg)pg.onclick=()=>abrir('banco','@'+m.arroba)}}};
@@ -638,7 +695,7 @@ P.lojas=(aba)=>{aba=aba||'lojas';const ab=S.lojas.filter(l=>l.status==='aberta')
  const h=aba==='lojas'?(ab.length?ab.map(l=>{const d=S.byId[l.dono];return `<div class="card"><h4>${esc(l.nome)}</h4><div class="meta">${esc(l.tipo)} · de ${esc(nomeDe(l.dono))} <span class="at">${arDe(l.dono)}</span>${d&&d.casa?' · Casa nº '+d.casa:''}</div>${(l.estoque||[]).slice(0,4).map(e=>`<span class="chip" style="background:#efe1bc">${esc(e.n)} · ${fmt(e.q)}</span>`).join('')}<div>${d&&d.casa?`<button class="btn sm dark" data-casa="${d.casa}">🧭 Ir até lá</button>`:''}<button class="btn sm sec" data-loja="${l.id}">Ver loja</button></div></div>`}).join(''):'<p>Nenhum comércio aberto ainda. Abra o primeiro em <b>O seu cofre → Meu negócio</b>.</p>')
  :`<p class="hint">Toque numa casa livre para morar. Cada morador tem uma casa.</p><div class="casas">${CASAS.map((q,i)=>{const d=S.mor.find(m=>m.casa===i+1);return `<div class="casa ${d?(d.id===S.uid?'minha':'dono'):''}" data-n="${i+1}"><b>${i+1}</b>${d?esc(d.nome.slice(0,8)):'livre'}</div>`}).join('')}</div>`;
  return{t:'Lojas e casas',h:tabs+h,on:r=>r.onclick=e=>{const t=e.target.closest('[data-t]');if(t){pilha.pop();return abrir('lojas',t.dataset.t)}const c=e.target.closest('[data-casa]');if(c){const q=CASAS[c.dataset.casa-1];return irPara(q[0],q[1]+.004)}const lj=e.target.closest('[data-loja]');if(lj)return verLoja(+lj.dataset.loja);
-  const n=e.target.closest('[data-n]');if(n){const k=+n.dataset.n;const d=S.mor.find(m=>m.casa===k);const q=CASAS[k-1];if(d||S.me.casa){irPara(q[0],q[1]+.004)}else escolherCasa(k)}}}};
+  const n=e.target.closest('[data-n]');if(n){const k=+n.dataset.n;const d=S.mor.find(m=>m.casa===k);const q=CASAS[k-1];if(d||(S.me.casa&&!confirm('Essa casa está livre. Quer se mudar para ela? (Cancelar só leva você até lá)'))){irPara(q[0],q[1]+.004)}else escolherCasa(k)}}}};
 function verLoja(id){abrir('loja',id)}
 P.loja=id=>{const l=S.lojas.find(x=>x.id===id);return{t:l.nome,h:`<div class="card"><h4>${esc(l.nome)}</h4><div class="meta">${esc(l.tipo)} · de ${esc(nomeDe(l.dono))} <span class="at">${arDe(l.dono)}</span>${l.funcionario?' · balcão: '+esc(nomeDe(l.funcionario)):''}</div></div>
  <h4 style="font-family:Pixelify Sans;color:var(--red)">Estoque</h4><ul class="lst">${(l.estoque||[]).map(e=>`<li><span>${esc(e.n)}</span><b>${fmt(e.q)}</b></li>`).join('')||'<li>vazio</li>'}</ul>
@@ -693,21 +750,36 @@ P.negocio=()=>{const minhas=S.lojas.filter(l=>l.dono===S.uid);const ab=minhas.fi
 // ----- missões -----
 P.missoes=(aba)=>{aba=aba||'mural';const T=(k,n)=>`<button data-t="${k}" class="${aba==k?'on':''}">${n}</button>`;
  const card=x=>`<div class="card"><h4>${esc(x.titulo)}</h4><div>${x.tipo==='real'?'<span class="chip c-real">missão real</span>':'<span class="chip c-sec">secundária</span>'}${chipSt(x.status)}</div>
-  <div class="meta">Líder: ${esc(nomeDe(x.lider))} <span class="at">${arDe(x.lider)}</span> · ${x.membros.length} no grupo</div><p>${esc(x.plano)}</p>
+  <div class="meta">Líder: ${esc(nomeDe(x.lider))} <span class="at">${arDe(x.lider)}</span> · ${x.membros.length}${x.vagas?'/'+x.vagas:''} no grupo${x.aberta?' · <b style="color:#2f7a3a">aberta: quem quiser entra</b>':''}</div><p>${esc(x.plano)}</p>
   <div class="meta" style="margin-top:6px">Grupo: ${x.membros.map(u=>`<span class="at">${arDe(u)}</span>`).join(' ')}</div>
   ${x.recompensa||x.valdins?`<div class="meta">Recompensa: ${esc(x.recompensa)}${x.valdins?' · '+fmt(x.valdins)+' Valdins para cada um':''}</div>`:''}
   ${x.diario?`<details><summary style="cursor:pointer;font:600 13px Pixelify Sans;color:var(--red)">Diário da jornada</summary><div class="pg" style="font-size:14px">${esc(x.diario)}</div></details>`:''}
+  ${x.aberta&&['pedida','aberta'].includes(x.status)&&!x.membros.includes(S.uid)&&!(x.vagas&&x.membros.length>=x.vagas)?`<button class="btn sm ok" data-en="${x.id}">⚔️ Entrar na missão</button>`:''}${x.membros.includes(S.uid)&&x.lider!==S.uid&&['pedida','aberta'].includes(x.status)?`<button class="btn sm sec" data-sa="${x.id}">Sair da missão</button>`:''}
   ${x.lider===S.uid&&x.status==='aberta'?`<label>Escrever no diário</label><textarea data-dia="${x.id}" placeholder="O que aconteceu hoje na jornada?"></textarea><button class="btn sm" data-ed="${x.id}">✍️ Escrever no diário</button>`:''}</div>`;
  let h;
- if(aba==='mural'){const L=S.missoes.filter(x=>['aberta','pedida'].includes(x.status));h=`<p class="hint">As missões reais são convocadas pela Coroa: o rei escolhe o líder, chama cada um pelo @ e promete a recompensa. As secundárias nascem de vocês.</p>`+(L.map(card).join('')||'<p>O mural está vazio. Peça a primeira missão!</p>')}
+ if(aba==='mural'){const L=S.missoes.filter(x=>['aberta','pedida'].includes(x.status));h=`<p class="hint">As missões reais são convocadas pela Coroa: o rei escolhe o líder, chama cada um pelo @ e promete a recompensa. As secundárias nascem de vocês. O Chefe da Guilda também abençoa e convoca missões.</p>`+(L.map(card).join('')||'<p>O mural está vazio. Peça a primeira missão!</p>')}
  else if(aba==='minhas'){const L=S.missoes.filter(x=>x.membros.includes(S.uid)&&x.status!=='selada');h=L.map(card).join('')||'<p>Você não está em nenhuma missão.</p>'}
- else if(aba==='pedir'){const d=S.me.descanso_ate&&new Date(S.me.descanso_ate)>new Date();h=`<div class="card"><h4>Pedir uma missão secundária</h4><p class="hint">Junte o seu grupo, conte o plano e peça a bênção do rei. Uma missão por vez, com três dias de descanso depois de cada uma. O líder escreve o diário e só a Coroa sela.</p>
+ else if(aba==='pedir'){const d=S.me.descanso_ate&&new Date(S.me.descanso_ate)>new Date();h=`<div class="card"><h4>Pedir uma missão secundária</h4><p class="hint">Junte o seu grupo, conte o plano e peça a bênção do rei. Uma missão por vez, com três dias de descanso depois de cada uma. O líder escreve o diário e só a Coroa sela. Se deixar a missão aberta, ela aparece no mural com o botão Entrar.</p>
   ${d?`<p><b>Você está descansando até ${quando(S.me.descanso_ate)}.</b></p>`:''}
   <label>Nome da missão</label><input id="mT" maxlength="80" placeholder="ex.: Expedição ao Vale de Ferro"><label>O plano</label><textarea id="mP" maxlength="1500" placeholder="O que o grupo vai fazer, onde e por quê"></textarea>
-  <label>Quem vai com você (@, separados por espaço)</label><input id="mM" list="arrobas" placeholder="@amigo1 @amigo2" autocapitalize="none"><label>Recompensa que vocês pedem</label><input id="mR" maxlength="200" placeholder="ex.: uma carroça e dois cavalos"><button class="btn" id="mOk">Levar o pedido à Coroa</button></div>`}
+  <label>Quem vai com você (@, separados por espaço)</label><input id="mM" list="arrobas" placeholder="@amigo1 @amigo2 (ou deixe vazio)" autocapitalize="none">
+  <label style="display:flex;gap:10px;align-items:center;text-transform:none;letter-spacing:0;font:16px var(--serif);color:var(--ink)"><input type="checkbox" id="mA" style="width:auto"> Deixar aberta: quem quiser pode entrar no grupo</label>
+  <div id="mVb" style="display:none"><label>Máximo de pessoas no grupo (0 = sem limite)</label><input id="mV" type="number" min="0" max="50" value="0"></div><label>Recompensa que vocês pedem</label><input id="mR" maxlength="200" placeholder="ex.: uma carroça e dois cavalos"><button class="btn" id="mOk">Levar o pedido à Coroa</button></div>`}
  else{const L=S.missoes.filter(x=>x.status==='selada');h=`<p class="hint">Em Valdreinor, honra não se fabrica. Cada missão selada vira feito para sempre ao lado do seu nome.</p>`+(L.map(x=>`<div class="card"><h4>🏅 ${esc(x.titulo)}</h4><div class="meta">selada em ${quando(x.selada_em)} · ${x.membros.map(u=>esc(nomeDe(u))).join(', ')}</div></div>`).join('')||'<p>Nenhum feito no livro ainda.</p>')}
- return{t:'Missões do Reino',h:`<div class="tabs">${T('mural','Mural')}${T('minhas','Minhas')}${T('pedir','Pedir missão')}${T('feitos','Feitos')}</div>`+h,on:r=>{r.onclick=e=>{const t=e.target.closest('[data-t]');if(t){pilha.pop();abrir('missoes',t.dataset.t)}const ed=e.target.closest('[data-ed]');if(ed){const tx=r.querySelector(`[data-dia="${ed.dataset.ed}"]`).value.trim();if(tx)exec('escrever_diario',{p_id:+ed.dataset.ed,p_texto:tx},'Escrito no diário')}};
-  const ok=r.querySelector('#mOk');if(ok)ok.onclick=()=>{if(!val(r,'mT'))return toast('Dê um nome à missão');exec('pedir_missao',{p_titulo:val(r,'mT'),p_plano:val(r,'mP'),p_membros:listaAr(val(r,'mM')),p_recompensa:val(r,'mR')},'Pedido levado à Coroa')}}}};
+ return{t:'Missões do Reino',h:`<div class="tabs">${T('mural','Mural')}${T('minhas','Minhas')}${T('pedir','Pedir missão')}${T('feitos','Feitos')}</div>`+h,on:r=>{r.onclick=e=>{const t=e.target.closest('[data-t]');if(t){pilha.pop();abrir('missoes',t.dataset.t)}const ed=e.target.closest('[data-ed]');if(ed){const tx=r.querySelector(`[data-dia="${ed.dataset.ed}"]`).value.trim();if(tx)exec('escrever_diario',{p_id:+ed.dataset.ed,p_texto:tx},'Escrito no diário')}
+   const en=e.target.closest('[data-en]');if(en)exec('entrar_missao',{p_id:+en.dataset.en},'Você entrou na missão!');const sa=e.target.closest('[data-sa]');if(sa&&confirm('Sair desta missão?'))exec('sair_missao',{p_id:+sa.dataset.sa},'Você saiu da missão')};
+  const ma=r.querySelector('#mA');if(ma)ma.onchange=()=>{r.querySelector('#mVb').style.display=ma.checked?'block':'none'};
+  const ok=r.querySelector('#mOk');if(ok)ok.onclick=()=>{if(!val(r,'mT'))return toast('Dê um nome à missão');exec('pedir_missao',{p_titulo:val(r,'mT'),p_plano:val(r,'mP'),p_membros:listaAr(val(r,'mM')),p_recompensa:val(r,'mR'),p_aberta:!!(r.querySelector('#mA')||{}).checked,p_vagas:parseInt(val(r,'mV')||'0',10)||0},'Pedido levado à Coroa')}}}};
+
+// ----- mesa da guilda (Chefe da Guilda: abençoa, recusa e convoca missões; quem sela é a Coroa) -----
+P.guilda=()=>{const mp=S.missoes.filter(x=>x.status==='pedida'),ma=S.missoes.filter(x=>x.status==='aberta');
+ const h=`<p class="hint">Como Chefe da Guilda, você abençoa ou recusa os pedidos de missão e convoca missões novas. A recompensa vai até 5.000 Valdins por pessoa. Quem sela as missões é a Coroa.</p>`+
+  (mp.map(x=>`<div class="card"><h4>${esc(x.titulo)}${x.aberta?' <span class="chip c-abe">aberta</span>':''}</h4><div class="meta">Líder ${arDe(x.lider)} · grupo: ${x.membros.map(arDe).join(' ')}${x.vagas?' · '+x.membros.length+'/'+x.vagas+' vagas':''}</div><p>${esc(x.plano)}</p><div class="meta">Pedem: ${esc(x.recompensa)||'—'}</div><label>Valdins para cada um ao selar (até 5.000)</label><input type="number" min="0" max="5000" value="300" data-vv="${x.id}"><button class="btn sm ok" data-am="${x.id}">Abençoar</button><button class="btn sm sec" data-rm="${x.id}">Recusar</button></div>`).join('')||'<p>Nenhum pedido de missão esperando.</p>')+
+  (ma.length?`<h4 style="margin:14px 0 6px;font:400 18px var(--tit)">Em andamento</h4>`+ma.map(x=>`<div class="card"><h4>${esc(x.titulo)}</h4><div class="meta">Líder ${arDe(x.lider)} · ${x.membros.length} no grupo · ${fmt(x.valdins)} V cada</div>${x.diario?`<div class="pg" style="font-size:13px">${esc(x.diario)}</div>`:'<p class="hint">Diário ainda vazio.</p>'}</div>`).join(''):'')+
+  `<div class="card"><h4>Convocar missão</h4><label>Título</label><input id="rT"><label>Plano</label><textarea id="rP"></textarea><label>Líder</label><input id="rL" list="arrobas" autocapitalize="none"><label>Grupo (@ separados por espaço)</label><input id="rM" autocapitalize="none"><div class="row"><div><label>Recompensa</label><input id="rR" placeholder="carroça, cavalos…"></div><div><label>Valdins cada (até 5.000)</label><input id="rV" type="number" min="0" max="5000" value="500"></div></div><button class="btn" id="rOk">Convocar</button></div>`;
+ return{t:'Mesa da Guilda',h,on:r=>{r.onclick=e=>{const d=k=>{const b=e.target.closest(`[data-${k}]`);return b?b.dataset[k]:null};let x;
+  if(x=d('am'))return exec('decidir_missao',{p_id:+x,p_ok:true,p_valdins:parseInt(r.querySelector(`[data-vv="${x}"]`).value||'0',10)},'Missão abençoada');if(x=d('rm'))return exec('decidir_missao',{p_id:+x,p_ok:false,p_valdins:0},'Missão recusada')};
+  const b=r.querySelector('#rOk');if(b)b.onclick=()=>exec('criar_missao_real',{p_titulo:val(r,'rT'),p_plano:val(r,'rP'),p_lider:val(r,'rL'),p_membros:listaAr(val(r,'rM')),p_recompensa:val(r,'rR'),p_valdins:parseInt(val(r,'rV')||'0',10)},'Missão convocada')}}};
 
 // ----- clãs -----
 P.clas=()=>({t:'Clãs e castelos',h:`<p class="hint">Junte 10 @ e o seu clã pode pedir um castelo à Coroa.</p>${S.clas.map(c=>`<div class="card"><h4>🛡️ ${esc(c.nome)}</h4><div class="meta">Líder: ${esc(nomeDe(c.lider))} · ${c.membros.length}/10 membros · castelo: ${{nao:'ainda não',pedido:'pedido à Coroa',aprovado:'🏰 aprovado'}[c.castelo]}</div><div class="meta">${c.membros.map(u=>`<span class="at">${arDe(u)}</span>`).join(' ')}</div>${c.lider===S.uid&&c.castelo==='nao'&&c.membros.length>=10?`<button class="btn sm" data-pc="${c.id}">Pedir castelo</button>`:''}</div>`).join('')||'<p>Nenhum clã ainda.</p>'}
@@ -761,7 +833,8 @@ P.coroa=(aba)=>{aba=aba||'entrada';const T=(k,n,b)=>`<button data-t="${k}" class
   <div class="card"><h4>Colocar item na mochila</h4><label>Para</label><input id="diP" list="arrobas" autocapitalize="none"><div class="row"><div><label>Item</label><input id="diN" placeholder="Carroça"></div><div><label>Tipo</label><select id="diT">${TIPOS.map(t=>`<option>${t}</option>`).join('')}</select></div></div><button class="btn" id="diOk">Entregar</button></div>
   <div class="card"><h4>Aviso para todo o reino</h4><textarea id="avX" maxlength="400"></textarea><button class="btn" id="avOk">📯 Anunciar</button></div>
   <div class="card"><h4>Dar rosto a um morador</h4><p class="hint">Nome do arquivo da imagem no GitHub (ex.: p_tenshi.png). Depois de ter rosto, a aparência fica travada.</p><select id="reA">${S.mor.filter(m=>m.status==='aprovado').sort((a,b)=>a.nome.localeCompare(b.nome)).map(m=>`<option value="${m.id}">${esc(curto(m.nome))}${m.arroba?' @'+esc(m.arroba):''}${m.retrato?' · '+esc(m.retrato):''}</option>`).join('')}</select><input id="reF" placeholder="p_nome.png" style="margin-top:8px"><button class="btn" id="reOk">Salvar retrato</button></div>
-  ${S.me.papel==='coroa'?`<div class="card"><h4>Conselho da Coroa</h4><p class="hint">Quem estiver no Conselho também aprova entradas, missões, lojas e julga casos.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.papel==='conselho').map(m=>'@'+esc(m.arroba)).join(' ')||'ninguém'}</div><input id="coA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="coAdd">Pôr no Conselho</button><button class="btn sm sec" id="coRem">Tirar do Conselho</button></div>`:''}`;
+  ${S.me.papel==='coroa'?`<div class="card"><h4>Conselho da Coroa</h4><p class="hint">Quem estiver no Conselho também aprova entradas, missões, lojas e julga casos.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.papel==='conselho').map(m=>'@'+esc(m.arroba)).join(' ')||'ninguém'}</div><input id="coA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="coAdd">Pôr no Conselho</button><button class="btn sm sec" id="coRem">Tirar do Conselho</button></div>
+  <div class="card"><h4>Chefe da Guilda</h4><p class="hint">O Chefe da Guilda abre a Mesa da Guilda: abençoa ou recusa os pedidos de missão e convoca missões, prometendo até 5.000 Valdins por pessoa. Selar continua sendo só da Coroa.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.guilda).map(m=>esc(curto(m.nome))+(m.arroba?' @'+esc(m.arroba):' (ainda não entrou na cidade)')).join(', ')||'ninguém'}</div><input id="guA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="guAdd">Nomear Chefe da Guilda</button><button class="btn sm sec" id="guRem">Tirar o cargo</button></div>`:''}`;
  return{t:'Sala da Coroa',h:`<div class="stat3"><div><b>${fmt(criados)}</b><small>Valdins criados</small></div><div><b>${pendCoroa()}</b><small>esperando</small></div><div><b>${S.mor.filter(m=>m.status==='aprovado').length}</b><small>moradores</small></div></div><div class="tabs">${T('entrada','Entradas',pend.length)}${T('missoes','Missões',mp.length)}${T('justica','Justiça',pr.length)}${T('lojas','Lojas',lj.length+cs.length)}${T('ranking','Ranking')}${T('tesouro','Tesouro')}</div>`+h,
  on:r=>{r.onclick=e=>{const d=k=>{const b=e.target.closest(`[data-${k}]`);return b?b.dataset[k]:null};let x;
   if(x=d('t')){pilha.pop();return abrir('coroa',x)}
@@ -779,7 +852,7 @@ P.coroa=(aba)=>{aba=aba||'entrada';const T=(k,n,b)=>`<button data-t="${k}" class
   on('reOk',()=>exec('definir_retrato',{p_id:r.querySelector('#reA').value,p_retrato:val(r,'reF')},'Retrato salvo'));
   const rk=r.querySelector('#rkM');if(rk){const fill=()=>{const m=S.byId[rk.value];r.querySelector('#rkXo').value=m.xp_oficio||0;r.querySelector('#rkRo').value=m.rank_oficio||'F';r.querySelector('#rkXc').value=m.xp_classe||0;r.querySelector('#rkRc').value=m.rank_classe||'F'};rk.onchange=fill;fill();
    on('rkOk',()=>exec('definir_xp',{p_id:rk.value,p_xo:parseInt(val(r,'rkXo')||'0',10),p_ro:r.querySelector('#rkRo').value,p_xc:parseInt(val(r,'rkXc')||'0',10),p_rc:r.querySelector('#rkRc').value},'Ranking salvo'))}
-  on('coAdd',()=>exec('definir_papel',{p_arroba:val(r,'coA'),p_papel:'conselho'},'Agora faz parte do Conselho'));on('coRem',()=>exec('definir_papel',{p_arroba:val(r,'coA'),p_papel:'morador'},'Saiu do Conselho'))}}};
+  on('coAdd',()=>exec('definir_papel',{p_arroba:val(r,'coA'),p_papel:'conselho'},'Agora faz parte do Conselho'));on('coRem',()=>exec('definir_papel',{p_arroba:val(r,'coA'),p_papel:'morador'},'Saiu do Conselho'));on('guAdd',()=>exec('definir_guilda',{p_arroba:val(r,'guA'),p_on:true},'Chefe da Guilda nomeado'));on('guRem',()=>exec('definir_guilda',{p_arroba:val(r,'guA'),p_on:false},'Cargo retirado'))}}};
 
 // ================== INÍCIO ==================
 if(DEMO){const d=document.createElement('div');d.className='demo';d.textContent='MODO DEMONSTRAÇÃO · nada é salvo no servidor · entre com @valdreinor e qualquer senha para ver a Coroa';document.body.appendChild(d)}
