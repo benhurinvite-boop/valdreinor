@@ -176,7 +176,7 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
 <!-- ============ CIDADE ============ -->
 <section class="scr" id="cidade">
  <div id="top"><div><div class="lg">VALDREINOR</div></div><div class="st" id="topst"></div>
-  <button class="ib" id="bAv" title="Avisos">🔔<i id="avN"></i></button><button class="ib" id="bMenu" title="Menu">☰<i id="mnN"></i></button></div>
+  <button class="ib" id="bSom" title="Música">🔊</button><button class="ib" id="bAv" title="Avisos">🔔<i id="avN"></i></button><button class="ib" id="bMenu" title="Menu">☰<i id="mnN"></i></button></div>
  <canvas id="cv"></canvas>
  <div id="place"></div><div id="coins"></div>
  <div id="falaBar"><input id="falaIn" maxlength="100" placeholder="Fale com quem está na cidade…" autocomplete="off"><button id="falaOk">Falar</button></div>
@@ -351,7 +351,7 @@ $('fLogin').onsubmit=async e=>{e.preventDefault();$('lErr').textContent='';try{a
 $('fNovo').onsubmit=async e=>{e.preventDefault();$('nErr').textContent='';if($('nS').value!==$('nS2').value)return $('nErr').textContent='As senhas não são iguais.';if(arr($('nA').value).length<2)return $('nErr').textContent='Escreva o seu @ do Instagram.';
  try{await API.signUp($('nA').value,$('nS').value);S.novoArroba=arr($('nA').value);await rota()}catch(er){$('nErr').textContent=er.message}};
 $('eR').onclick=rota;$('eE').onclick=()=>abrirCadastro(S.me);$('eS').onclick=sair;
-async function sair(){await API.signOut();S.auth=null;S.uid=null;S.me=null;fecharTudo();tela('portao')}
+async function sair(){somDesliga();await API.signOut();S.auth=null;S.uid=null;S.me=null;fecharTudo();tela('portao')}
 
 // cadastro
 let corT=ROUPA[0],corH=CABELO[0];
@@ -638,6 +638,22 @@ function balao(g,x,y,t){const d=DPR;g.font=`600 ${12*d}px system-ui,sans-serif`;
  g.fillStyle='#2a1a10';g.textAlign='center';L.forEach((l,i)=>g.fillText(l,x,by+16*d+i*15*d))}
 function falaDe(id){const f=VIVO.falas[id];if(!f)return null;if(performance.now()>f.ate){delete VIVO.falas[id];return null}return f.t}
 const onlineAgora=()=>VIVO.online.size;
+
+// ================== MÚSICA (trilha da vila em laço, pode desligar no 🔊) ==================
+const SOM={ctx:null,buf:null,src:null,gain:null,on:true,carregando:false};
+try{SOM.on=localStorage.getItem('vald_som')!=='0'}catch(e){}
+function somIcone(){const b=$('bSom');if(b){b.textContent=SOM.on?'🔊':'🔇';b.title=SOM.on?'Desligar a música':'Ligar a música'}}
+async function somLiga(){if(window.__VIDEO||!SOM.on||SOM.src||SOM.carregando)return;SOM.carregando=true;
+ try{if(!SOM.ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;SOM.ctx=new AC();SOM.gain=SOM.ctx.createGain();SOM.gain.gain.value=0;SOM.gain.connect(SOM.ctx.destination)}
+  if(SOM.ctx.state==='suspended')await SOM.ctx.resume();
+  if(!SOM.buf){const ab=await fetch('arte/vald/vila.mp3').then(r=>r.arrayBuffer());SOM.buf=await SOM.ctx.decodeAudioData(ab)}
+  if(SOM.src||!SOM.on)return;const s=SOM.ctx.createBufferSource();s.buffer=SOM.buf;s.loop=true;const pad=SOM.buf.duration>76.85?0.026:0;s.loopStart=pad;s.loopEnd=Math.min(SOM.buf.duration,pad+76.8);
+  s.connect(SOM.gain);s.start(0,pad);SOM.src=s;SOM.gain.gain.cancelScheduledValues(SOM.ctx.currentTime);SOM.gain.gain.setTargetAtTime(0.3,SOM.ctx.currentTime,1.2)}catch(e){}finally{SOM.carregando=false}}
+function somDesliga(){if(!SOM.src)return;const s=SOM.src;SOM.src=null;try{SOM.gain.gain.setTargetAtTime(0,SOM.ctx.currentTime,.25);setTimeout(()=>{try{s.stop()}catch(e){}},1200)}catch(e){}}
+somIcone();
+$('bSom').onclick=e=>{e.stopPropagation();SOM.on=!SOM.on;try{localStorage.setItem('vald_som',SOM.on?'1':'0')}catch(er){}somIcone();SOM.on?somLiga():somDesliga()};
+document.addEventListener('pointerdown',()=>{if($('cidade').classList.contains('on'))somLiga()},true);
+document.addEventListener('visibilitychange',()=>{if(!SOM.ctx)return;if(document.hidden)SOM.ctx.suspend().catch(()=>{});else if(SOM.on)SOM.ctx.resume().catch(()=>{})});
 
 // ================== MENU ==================
 $('bMenu').onclick=abrirMenu;$('bAv').onclick=()=>abrir('avisos');
