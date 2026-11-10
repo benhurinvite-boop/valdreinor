@@ -120,6 +120,27 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
 #falaBar input{flex:1;background:#1b1720f5;color:#efe6d8;border:1px solid var(--gold2);border-radius:10px;font:16px system-ui,sans-serif;padding:11px 12px}
 #falaBar button{border:0;border-radius:10px;background:var(--cta);color:#fff;font:600 14px system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:0 16px}
 #menu{background:rgba(0,0,0,.25)}
+
+/* guerra */
+#gBar{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:4;display:none;background:linear-gradient(#2a0c0ef0,#180608f0);border:1px solid #8a2a22;border-radius:12px;padding:8px 12px 9px;box-shadow:0 6px 22px rgba(0,0,0,.55),0 0 0 1px rgba(255,90,60,.12) inset;cursor:pointer;animation:gPulse 2.4s ease-in-out infinite}
+#gBar.fim{animation:none;border-color:#6a5a36;background:linear-gradient(#2a2416f0,#1a160ef0)}#gBar.fim.derrota{border-color:#8a2a22;background:linear-gradient(#2a0c0ef0,#180608f0)}
+@keyframes gPulse{0%,100%{box-shadow:0 6px 22px rgba(0,0,0,.55),0 0 0 0 rgba(255,70,50,0)}50%{box-shadow:0 6px 22px rgba(0,0,0,.55),0 0 18px 2px rgba(255,70,50,.35)}}
+#gBar .gt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:400 15px var(--tit);color:#ffd9c0;letter-spacing:.02em}#gBar .gt span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#gBar .gt em{font:600 12px 'Pixelify Sans';font-style:normal;color:#ffb08a;white-space:nowrap}
+.gl{display:flex;align-items:center;gap:8px;margin-top:5px}.gl i{font:600 10px 'Pixelify Sans';font-style:normal;text-transform:uppercase;letter-spacing:.06em;color:#e8c8b0;width:54px;flex:none}
+.gl b{font:600 11px 'Pixelify Sans';color:#f6e8d8;min-width:52px;text-align:right;flex:none}
+.gb{flex:1;height:10px;background:#0c0606;border:1px solid #4a1a16;border-radius:3px;overflow:hidden}.gb s{display:block;height:100%;text-decoration:none;transition:width .6s}
+.gb.v s{background:linear-gradient(#ff5a4a,#b0201a)}.gb.m s{background:linear-gradient(#d8c8a0,#8a7a5a)}.gb.m.crit s{background:linear-gradient(#ffb04a,#c05a1a);animation:gCrit .5s steps(2) infinite}
+@keyframes gCrit{50%{opacity:.55}}
+.gcard .gl i{color:var(--ink2)}.gcard .gl b{color:var(--ink)}.gcard .gb{border-color:#8a6a4a}
+#gBar .gfim{font:400 15px var(--tit);color:#f6e8c8;text-align:center}#gBar .gfim b{color:var(--gold)}
+#gBtn{position:absolute;right:10px;bottom:calc(max(30px,env(safe-area-inset-bottom)) + 70px);z-index:5;display:none;align-items:center;gap:10px;padding:10px 16px 10px 12px;border:0;border-radius:14px;background:linear-gradient(#d8402a,#8a1a12);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;text-align:left}
+#gBtn span{font-size:26px;line-height:1}#gBtn b{display:block;font:600 15px 'Pixelify Sans';letter-spacing:.08em;text-transform:uppercase}#gBtn small{display:block;font:12px system-ui,sans-serif;opacity:.9}
+#gBtn.esp{background:linear-gradient(#4a3a3a,#2a2020);box-shadow:0 6px 18px rgba(0,0,0,.5)}
+#gAlarme{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(ellipse at center,rgba(120,10,10,.55),rgba(0,0,0,.75))}
+#gAlarme.on{opacity:1}#gAlarme div{text-align:center;padding:0 24px;transform:scale(.9);transition:transform .4s}#gAlarme.on div{transform:scale(1)}
+#gAlarme small{display:block;font:600 14px 'Pixelify Sans';letter-spacing:.3em;color:#ff8a6a}#gAlarme b{display:block;font:400 30px var(--tit);color:#ffe8d0;margin:8px 0;text-shadow:0 2px 0 #000}#gAlarme span{font:16px var(--serif);color:#f3e0cc}
+.gcomo li span{font-size:15px}
 </style></head>
 <body>
 <datalist id="arrobas"></datalist>
@@ -178,7 +199,7 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
  <div id="top"><div><div class="lg">VALDREINOR</div></div><div class="st" id="topst"></div>
   <button class="ib" id="bSom" title="Música">🔊</button><button class="ib" id="bAv" title="Avisos">🔔<i id="avN"></i></button><button class="ib" id="bMenu" title="Menu">☰<i id="mnN"></i></button></div>
  <canvas id="cv"></canvas>
- <div id="place"></div><div id="coins"></div>
+ <div id="place"></div><div id="coins"></div><div id="gBar"></div><button id="gBtn"></button><div id="gAlarme"></div>
  <div id="falaBar"><input id="falaIn" maxlength="100" placeholder="Fale com quem está na cidade…" autocomplete="off"><button id="falaOk">Falar</button></div>
  <div id="hud"><button id="bFala" title="Falar">💬</button><div id="hudt"></div><button id="act">Entrar</button></div>
 </section>
@@ -261,6 +282,13 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
  const guild=()=>{const m=me();if(!m||!(['coroa','rei','conselho'].includes(m.papel)||m.guilda))throw new Error('Só a Coroa ou o Chefe da Guilda podem fazer isso');return m};
  const av=(para,texto)=>D.avisos.push({id:D.seq++,para,texto,criado_em:now()});
  const tx=(de,para,valor,tipo,motivo)=>D.transacoes.push({id:D.seq++,de,para,valor,tipo,motivo:motivo||'',criado_em:now()});
+ const gTick=()=>{D.guerras=D.guerras||[];D.golpes=D.golpes||[];const g=D.guerras.find(x=>x.status==='ativa');if(!g)return null;const ate=Math.min(Date.now(),new Date(g.fim).getTime());
+   const dd=Math.floor(g.ataque_hora*(ate-new Date(g.ultimo_ataque).getTime())/3.6e6);if(dd>0){g.muralha=Math.max(0,g.muralha-dd);g.ultimo_ataque=new Date(new Date(g.ultimo_ataque).getTime()+dd*3.6e6/g.ataque_hora).toISOString()}
+   if(g.muralha<=0){gFim(g,'derrota');return null}if(Date.now()>=new Date(g.fim).getTime()){gFim(g,g.vida<=0?'vitoria':'recuou');return null}return g};
+  const gFim=(g,res)=>{const G=D.golpes.filter(x=>x.guerra===g.id);const pts={};G.forEach(x=>pts[x.morador]=(pts[x.morador]||0)+x.dano+x.cura);const her=Object.entries(pts).sort((a,b)=>b[1]-a[1])[0];
+   Object.assign(g,{status:res,encerrada_em:now(),heroi:her?her[0]:null});if(res==='vitoria')g.vida=0;if(res==='derrota'){g.muralha=0;g.ruinas=[...Array(120).keys()].map(i=>i+1).sort(()=>Math.random()-.5).slice(0,5)}
+   if(res!=='derrota')for(const [u,p] of Object.entries(pts)){const v=(res==='vitoria'?p:Math.floor(p/2))+(her&&u===her[0]&&res==='vitoria'?2000:0);const m=D.moradores.find(x=>x.id===u);m.saldo+=v;m.xp_classe=(m.xp_classe||0)+Math.floor(p/10);tx(null,u,v,'guerra','Defesa de Valdreinor: '+g.nome);av(u,'⚔️ Pela defesa contra '+g.nome+' você recebeu '+v+' Valdins.')}
+   av(null,res==='vitoria'?'🏆 VITÓRIA! '+g.nome+' caiu diante dos portões de Valdreinor.':res==='recuou'?'🛡️ '+g.nome+' recuou.':'🔥 DERROTA. A muralha caiu diante de '+g.nome+' e casas ficaram em ruínas.')};
  const ids=a=>[...new Set((a||[]).filter(x=>arr(x)).map(x=>byA(x).id))];
  const ocup=u=>D.missoes.some(x=>['pedida','aberta'].includes(x.status)&&(x.lider===u||x.membros.includes(u)))||(D.moradores.find(m=>m.id===u)?.descanso_ate>now());
  const F={
@@ -299,6 +327,27 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
   abrir_processo(a){const m=apr();D.processos.push({id:D.seq++,autor:m.id,envolvidos:ids(a.p_envolvidos),titulo:a.p_titulo,texto:a.p_texto,status:'aberto',sentenca:null,criado_em:now()})},
   julgar(a){coroa();const x=D.processos.find(p=>p.id===a.p_id);x.status='julgado';x.sentenca=a.p_sentenca},
   avisar_todos(a){coroa();av(null,a.p_texto)},
+   iniciar_guerra(a){if(!['coroa','rei'].includes(me().papel))throw new Error('Só o Rei ou o dono do reino soam o alarme de guerra');gTick();if(D.guerras.some(x=>x.status==='ativa'))throw new Error('Já existe uma guerra acontecendo');
+    const h=Math.max(2,Math.min(72,a.p_horas||24)),n=Math.max(5,D.moradores.filter(m=>m.status==='aprovado'&&m.conta).length),base={lobos:250,exercito:350,dragao:450,demonio:600}[a.p_inimigo];if(!base)throw new Error('Inimigo desconhecido');
+    const vm=Math.round(base*n*(.5+.5*h/24)),mm=Math.max(8000,600*n),nm=(a.p_nome||'').trim()||{dragao:'O Dragão Amaldiçoado',demonio:'O Exército do Rei Demônio',exercito:'Exército Invasor',lobos:'Alcateia de Lobos Sombrios'}[a.p_inimigo];
+    D.guerras.push({id:D.seq++,inimigo:a.p_inimigo,nome:nm,vida_max:vm,vida:vm,muralha_max:mm,muralha:mm,ataque_hora:Math.ceil(mm/(h*.7)),recarga_min:20,status:'ativa',criado_por:me().id,inicio:now(),fim:new Date(Date.now()+h*3.6e6).toISOString(),ultimo_ataque:now(),encerrada_em:null,heroi:null,ruinas:[]});
+    av(null,'⚔️ ALARME DE GUERRA! Inimigo no Portão Sul: '+nm+'. Entre na cidade e use o que você tem para defender o reino!')},
+   cancelar_guerra(){if(!['coroa','rei'].includes(me().papel))throw new Error('Só o Rei ou o dono do reino encerram uma guerra');D.guerras.filter(x=>x.status==='ativa').forEach(x=>{x.status='cancelada';x.encerrada_em=now()})},
+   golpear(){const m=apr(),g=gTick();if(!g)throw new Error('Não há guerra acontecendo agora');const ult=D.golpes.filter(x=>x.guerra===g.id&&x.morador===m.id).map(x=>x.criado_em).sort().pop();
+    if(ult&&Date.now()-new Date(ult).getTime()<g.recarga_min*6e4)throw new Error('Você ainda está recuperando o fôlego. Próximo golpe às '+new Date(new Date(ult).getTime()+g.recarga_min*6e4).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+    let ac=armaDe(Object.assign({},m,{papel:''}));const B={espada:[100,0],furia:[125,0],escudo:[60,70],magia:[115,0],mortos:[110,0],tempo:[85,0],flecha:[100,0],cura:[30,160],bomba:[105,0],fera:[100,0],punho:[95,0],adaga:[90,0],cancao:[55,70],pedra:[50,0]}[ac];
+    let d=B[0]+(m.oficio==='Guarda'?20:m.oficio==='Caçador'?15:0),c=B[1]+(['Ferreiro','Construtor','Marceneiro','Curandeiro'].includes(m.oficio)?60:0);const ri=Math.max(0,'F E D C B A S SS'.split(' ').indexOf(m.rank_classe||'F'));
+    let mu=(1+.08*ri)*(.8+Math.random()*.4)*(m.papel==='coroa'?3:m.papel==='rei'?1.5:1),ex=null;if(ac==='adaga'&&Math.random()<.35){mu*=2.2;ex='critico'}d=Math.round(d*mu);c=Math.round(c*mu);if(m.papel==='coroa')ac='coroa';
+    g.vida=Math.max(0,g.vida-d);g.muralha=Math.min(g.muralha_max,g.muralha+c);if(ac==='tempo')g.ultimo_ataque=new Date(new Date(g.ultimo_ataque).getTime()+6e5).toISOString();
+    D.golpes.push({id:D.seq++,guerra:g.id,morador:m.id,acao:ac,dano:d,cura:c,criado_em:now()});if(g.vida<=0)gFim(g,'vitoria');
+    return{acao:ac,dano:d,cura:c,extra:ex,vida:g.vida,muralha:g.muralha,status:g.vida<=0?'vitoria':'ativa'}},
+   guerra_ver(){gTick();const me_=me();const L=[...D.guerras].sort((a,b)=>(b.status==='ativa')-(a.status==='ativa')||b.id-a.id);const g=L[0];let rn=[];
+    const fin=[...D.guerras].filter(x=>['vitoria','derrota'].includes(x.status)).sort((a,b)=>b.id-a.id)[0];if(fin&&fin.status==='derrota')rn=fin.ruinas;
+    if(!g)return{g:null,ruinas:rn,historico:[]};const G=D.golpes.filter(x=>x.guerra===g.id);const rk={};G.forEach(x=>{const r=rk[x.morador]=rk[x.morador]||{id:x.morador,dano:0,cura:0,golpes:0};r.dano+=x.dano;r.cura+=x.cura;r.golpes++});
+    return{g:JSON.parse(JSON.stringify(g)),agora:now(),ruinas:rn,meu_ultimo:me_?G.filter(x=>x.morador===me_.id).map(x=>x.criado_em).sort().pop()||null:null,
+     ranking:Object.values(rk).sort((a,b)=>b.dano+b.cura-a.dano-a.cura).slice(0,20),ultimos:[...G].reverse().slice(0,12).map(x=>({id:x.morador,acao:x.acao,dano:x.dano,cura:x.cura,criado_em:x.criado_em})),
+     historico:D.guerras.filter(x=>x.status!=='ativa').sort((a,b)=>b.id-a.id).slice(0,10)}},
+
   pedir_loja(a){const m=apr();D.lojas.push({id:D.seq++,dono:m.id,nome:a.p_nome,tipo:a.p_tipo,status:'pedida',funcionario:null,salario:0,estoque:[],receitas:[],criado_em:now()})},
   decidir_loja(a){coroa();D.lojas.find(l=>l.id===a.p_id).status=a.p_ok?'aberta':'fechada'},
   salvar_loja(a){const l=D.lojas.find(x=>x.id===a.p_id&&x.dono===(me()||{}).id&&x.status==='aberta');if(!l)throw new Error('Só o dono mexe numa loja aberta');l.estoque=a.p_estoque;l.receitas=a.p_receitas;l.funcionario=arr(a.p_funcionario)?byA(a.p_funcionario).id:null;l.salario=a.p_salario},
@@ -326,6 +375,7 @@ async function carregar(){
  S.mor=mor;S.byId={};mor.forEach(m=>S.byId[m.id]=m);S.me=mor.find(m=>m.conta===S.auth)||null;S.uid=S.me?S.me.id:'-';
  Object.assign(S,{itens,ofertas,missoes,livros,processos,avisos:avisos.sort((a,b)=>b.criado_em<a.criado_em?-1:1),lojas,clas,tx:tx.sort((a,b)=>b.criado_em<a.criado_em?-1:1)});
  $('arrobas').innerHTML=mor.filter(m=>m.status==='aprovado'&&m.arroba).map(m=>`<option value="@${esc(m.arroba)}">${esc(m.nome)}</option>`).join('');
+ await guerraCarrega();
  atualizaTopo();
 }
 function atualizaTopo(){if(!S.me)return;const ap=S.mor.filter(m=>m.status==='aprovado').length;
@@ -534,7 +584,7 @@ function cidade(){const sp=.00105;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:
   const sx=X(px_),sy=Y(py_);if(sx<-80||sx>cv.width+80||sy<-120||sy>cv.height+80)return;visiveis.push({id:m.id,sx,sy});
   ents.push({y:py_,draw:()=>{desenha(g,sx,sy,m.cor,m.cabelo,dr_,mv_&&Math.floor(fr/10)%2,'',null,3*k,'',m.classe,m.nome);nomes.push([sx,sy-21*3*k+2*3*k,curto(m.nome),vivo?'#8dfc9c':(['coroa','rei','conselho'].includes(m.papel)?'#f6d68e':(m.conta?'#f3e8d2':'#cfc3d8')),m.conta&&m.arroba?'@'+m.arroba+(vivo?' · online':''):''])}})});
  if(S.me)ents.push({y:pl.y,me:1,draw:()=>desenha(g,X(pl.x),Y(pl.y),S.me.cor,S.me.cabelo,pl.dir,pl.mv&&Math.floor(fr/8)%2,'',null,3*k,'',S.me.classe,S.me.nome)});
- ents.sort((a,b)=>a.y-b.y);
+ guerraEnts(ents,v,k);ents.sort((a,b)=>a.y-b.y);
  for(const e of ents){if(e.draw){e.draw();continue}const [fi,id,x,y]=e.p,r=e.r,hd=VC.hd[fi],im=FOLHA[fi];if(!im.complete||!im.naturalWidth)continue;
   const dx_=Math.round((x-v.x)*k),dy_=Math.round((y-v.y)*k);g.drawImage(im,r[0]*hd,r[1]*hd,r[2]*hd,r[3]*hd,dx_,dy_,Math.round(r[2]*k),Math.round(r[3]*k));
   if(e.casa){const dono=S.mor.find(m=>m.casa===e.casa);if(dono){const fx=dx_+r[2]*k*.5,fy=dy_+4*k;const meu=dono.id===S.uid;g.fillStyle='#1b181b';g.fillRect(fx-1*k,fy-14*k,2*k,16*k);g.fillStyle=meu?'#f6d68e':(dono.cor||'#8a1e22');g.beginPath();g.moveTo(fx+1*k,fy-14*k);g.lineTo(fx+12*k,fy-10*k);g.lineTo(fx+1*k,fy-6*k);g.closePath();g.fill();g.strokeStyle='#1b181b';g.lineWidth=Math.max(1,k*.8);g.stroke()}}}
@@ -544,6 +594,7 @@ function cidade(){const sp=.00105;let dx=(keys.r?1:0)-(keys.l?1:0),dy=(keys.d?1:
  if(S.me){const L=window.LBL;window.LBL=null;etiqueta(g,X(pl.x),Y(pl.y)-21*3*k+2*3*k,S.me.nome,'#9dffa8','você');window.LBL=L}
  if(k>.55)nomes.forEach(n=>etiqueta(g,...n));
  visiveis.forEach(v=>{const t=falaDe(v.id);if(t)balao(g,v.sx,v.sy-21*3*k-14*DPR,t)});if(S.me){const t=falaDe(S.uid);if(t)balao(g,X(pl.x),Y(pl.y)-21*3*k-24*DPR,t)}
+ guerraFX(k);
  // placas dos lugares
  if(k>.4)PINS.forEach(([x,y,t])=>{const sx=X(x/100),sy=Y(y/100);if(sx<-120||sx>cv.width+120||sy<-60||sy>cv.height+200)return;placa(g,sx,sy-22*k,t,perto&&perto.n===t)});
  // HUD
@@ -608,6 +659,7 @@ function vivoLiga(){if(DEMO||VIVO.ch||!S.me||!S.uid||S.uid==='-')return;
  ch.on('presence',{event:'sync'},()=>{VIVO.online=new Set(Object.keys(ch.presenceState()));for(const id in VIVO.rem)if(!VIVO.online.has(id))delete VIVO.rem[id];atualizaTopo()});
  ch.on('presence',{event:'join'},()=>{setTimeout(()=>vivoEnvia(true),300+Math.random()*700)});
  ch.on('broadcast',{event:'mv'},({payload:p})=>vivoRecebe(p));
+ ch.on('broadcast',{event:'golpe'},({payload:p})=>guerraRecebe(p));ch.on('broadcast',{event:'guerra'},()=>setTimeout(()=>carregar().catch(()=>{}),800));
  ch.on('broadcast',{event:'fala'},({payload:p})=>{if(!p||!p.id||typeof p.t!=='string')return;VIVO.falas[p.id]={t:p.t.slice(0,100),ate:performance.now()+7000}});
  ch.subscribe(async st=>{if(st==='SUBSCRIBED'){VIVO.on=true;await ch.track({id:S.uid,t:Date.now()});vivoEnvia(true)}else if(st==='CLOSED'||st==='CHANNEL_ERROR'||st==='TIMED_OUT'){VIVO.on=false}});
  setInterval(()=>vivoEnvia(true),20000)}
@@ -670,6 +722,7 @@ function abrirMenu(){const m=S.me;const ofertas=S.ofertas.filter(o=>o.comprador=
  ${I('💰','O seu cofre','banco, mochila e o seu negócio','cofre',ofertas||'')}
  <div id="subCofre" style="display:none">${I('🏦','Banco de Valdreinor',fmt(m.saldo)+' Valdins','banco','','sub')}${I('🎒','Mochila',S.itens.filter(i=>i.dono===S.uid).length+'/20 espaços','mochila',ofertas||'','sub')}${I('🔨','Meu negócio','oficina e loja','negocio','','sub')}</div>
  ${I('📜','Missões','mural, diário e feitos','missoes',minhaMis||'')}
+  ${I('⚔️','Guerra',GU.sub(),'guerra',GU.ativa()?'!':'',GU.ativa()?'coroa':'')}
  ${I('🛡️','Clãs','junte 10 @ e peça um castelo','clas')}
  ${I('⚖️','Justiça e avisos','leve um caso à Coroa','justica',novosAvisos()||'')}
  ${I('📚','A biblioteca','livros, grimórios e ideias','biblioteca')}
@@ -854,7 +907,12 @@ P.coroa=(aba)=>{aba=aba||'entrada';const T=(k,n,b)=>`<button data-t="${k}" class
   <div class="card"><h4>Aviso para todo o reino</h4><textarea id="avX" maxlength="400"></textarea><button class="btn" id="avOk">📯 Anunciar</button></div>
   ${rei()?`<div class="card"><h4>Dar título ou cargo</h4><p class="hint">Aparece na ficha do morador e no site (ex.: Capitão de Valdreinor, General, Guarda Real). Deixe vazio para tirar.</p><select id="tiA">${S.mor.filter(m=>m.status==='aprovado').sort((a,b)=>a.nome.localeCompare(b.nome)).map(m=>`<option value="${m.id}">${esc(curto(m.nome))}${m.arroba?' @'+esc(m.arroba):''}${m.titulo?' · '+esc(m.titulo):''}</option>`).join('')}</select><input id="tiT" maxlength="60" placeholder="ex.: Capitão de Valdreinor" style="margin-top:8px"><button class="btn" id="tiOk">Salvar título</button></div>`:''}
   <div class="card"><h4>Dar rosto a um morador</h4><p class="hint">Nome do arquivo da imagem no GitHub (ex.: p_tenshi.png). Depois de ter rosto, a aparência fica travada.</p><select id="reA">${S.mor.filter(m=>m.status==='aprovado').sort((a,b)=>a.nome.localeCompare(b.nome)).map(m=>`<option value="${m.id}">${esc(curto(m.nome))}${m.arroba?' @'+esc(m.arroba):''}${m.retrato?' · '+esc(m.retrato):''}</option>`).join('')}</select><input id="reF" placeholder="p_nome.png" style="margin-top:8px"><button class="btn" id="reOk">Salvar retrato</button></div>
-  ${S.me.papel==='coroa'?`<div class="card"><h4>👑 Rei de Valdreinor</h4><p class="hint">Só você, dono do reino, coroa o Rei. O Rei aprova tudo como a Coroa e também nomeia o Conselho, o Chefe da Guilda e os títulos. O Rei anterior volta para o Conselho.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.papel==='rei').map(m=>esc(curto(m.nome))+' @'+esc(m.arroba)).join(', ')||'ninguém'}</div><input id="reiA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="reiOk">Coroar Rei</button></div>`:''}
+  ${rei()?`<div class="card"><h4>⚔️ Guerra</h4>${GU.ativa()?`<p><b>${esc(GA().nome)}</b> está atacando o reino. Termina sozinha quando o inimigo cair, a muralha cair ou o prazo acabar.</p><button class="btn sec" id="gwX">Encerrar a guerra sem resultado</button>`:`<p class="hint">Soe o alarme: um inimigo cerca o Portão Sul, todo o reino é avisado e cada morador luta com a sua classe. A força do inimigo cresce com o número de moradores.</p>
+   <label>Inimigo</label><select id="gwI"><option value="dragao">🐉 Dragão (difícil)</option><option value="demonio">😈 Rei Demônio (lendário)</option><option value="exercito">⚔️ Exército invasor (médio)</option><option value="lobos">🐺 Lobos sombrios (fácil)</option></select>
+   <label>Nome do inimigo (opcional)</label><input id="gwN" maxlength="60" placeholder="ex.: O Dragão Amaldiçoado">
+   <label>Duração</label><select id="gwH"><option value="6">6 horas</option><option value="12">12 horas</option><option value="24" selected>24 horas</option><option value="48">48 horas</option></select>
+   <button class="btn" id="gwOk">📯 Soar o alarme de guerra</button>`}</div>`:''}
+   ${S.me.papel==='coroa'?`<div class="card"><h4>👑 Rei de Valdreinor</h4><p class="hint">Só você, dono do reino, coroa o Rei. O Rei aprova tudo como a Coroa e também nomeia o Conselho, o Chefe da Guilda e os títulos. O Rei anterior volta para o Conselho.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.papel==='rei').map(m=>esc(curto(m.nome))+' @'+esc(m.arroba)).join(', ')||'ninguém'}</div><input id="reiA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="reiOk">Coroar Rei</button></div>`:''}
   ${rei()?`<div class="card"><h4>Conselho da Coroa</h4><p class="hint">Quem estiver no Conselho também aprova entradas, missões, lojas, cunha Valdins e julga casos.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.papel==='conselho').map(m=>esc(curto(m.nome))+(m.arroba?' @'+esc(m.arroba):'')).join(', ')||'ninguém'}</div><input id="coA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="coAdd">Pôr no Conselho</button><button class="btn sm sec" id="coRem">Tirar do Conselho</button></div>
   <div class="card"><h4>Chefe da Guilda</h4><p class="hint">O Chefe da Guilda abre a Mesa da Guilda: abençoa ou recusa os pedidos de missão e convoca missões, prometendo até 5.000 Valdins por pessoa. Selar continua sendo só da Coroa.</p><div class="meta">Hoje: ${S.mor.filter(m=>m.guilda).map(m=>esc(curto(m.nome))+(m.arroba?' @'+esc(m.arroba):' (ainda não entrou na cidade)')).join(', ')||'ninguém'}</div><input id="guA" list="arrobas" placeholder="@morador" autocapitalize="none"><button class="btn sm ok" id="guAdd">Nomear Chefe da Guilda</button><button class="btn sm sec" id="guRem">Tirar o cargo</button></div>`:''}`;
  return{t:'Sala da Coroa',h:`<div class="stat3"><div><b>${fmt(criados)}</b><small>Valdins criados</small></div><div><b>${pendCoroa()}</b><small>esperando</small></div><div><b>${S.mor.filter(m=>m.status==='aprovado').length}</b><small>moradores</small></div></div><div class="tabs">${T('entrada','Entradas',pend.length)}${T('missoes','Missões',mp.length)}${T('justica','Justiça',pr.length)}${T('lojas','Lojas',lj.length+cs.length)}${T('ranking','Ranking')}${T('tesouro','Tesouro')}</div>`+h,
@@ -871,11 +929,225 @@ P.coroa=(aba)=>{aba=aba||'entrada';const T=(k,n,b)=>`<button data-t="${k}" class
   on('cuOk',()=>exec('cunhar',{p_para:val(r,'cuP'),p_valor:parseInt(val(r,'cuV')||'0',10),p_motivo:val(r,'cuM')},'Valdins cunhados'));
   on('diOk',()=>exec('dar_item',{p_para:val(r,'diP'),p_nome:val(r,'diN'),p_tipo:r.querySelector('#diT').value,p_desc:'Entregue pela Coroa',p_valor:0},'Item entregue'));
   on('avOk',()=>exec('avisar_todos',{p_texto:val(r,'avX')},'Aviso anunciado'));
+  on('gwOk',async()=>{const ii=r.querySelector('#gwI');if(!confirm('Soar o alarme de guerra? Todo o reino vai ser avisado.'))return;const ok=await exec('iniciar_guerra',{p_inimigo:ii.value,p_nome:val(r,'gwN'),p_horas:parseInt(r.querySelector('#gwH').value,10)},'📯 O alarme soou!');if(ok){GU.vistoAlarme=null;try{localStorage.removeItem('vald_guerra')}catch(e){}if(VIVO.on)VIVO.ch.send({type:'broadcast',event:'guerra',payload:{}}).catch(()=>{});fecharTudo();await guerraCarrega()}});
+  on('gwX',async()=>{if(!confirm('Encerrar a guerra agora? Ninguém ganha nem perde nada.'))return;const ok=await exec('cancelar_guerra',{},'Guerra encerrada');if(ok&&VIVO.on)VIVO.ch.send({type:'broadcast',event:'guerra',payload:{}}).catch(()=>{})});
   on('tiOk',()=>exec('definir_titulo',{p_id:r.querySelector('#tiA').value,p_titulo:val(r,'tiT')},'Título salvo'));
   on('reOk',()=>exec('definir_retrato',{p_id:r.querySelector('#reA').value,p_retrato:val(r,'reF')},'Retrato salvo'));
   const rk=r.querySelector('#rkM');if(rk){const fill=()=>{const m=S.byId[rk.value];r.querySelector('#rkXo').value=m.xp_oficio||0;r.querySelector('#rkRo').value=m.rank_oficio||'F';r.querySelector('#rkXc').value=m.xp_classe||0;r.querySelector('#rkRc').value=m.rank_classe||'F'};rk.onchange=fill;fill();
    on('rkOk',()=>exec('definir_xp',{p_id:rk.value,p_xo:parseInt(val(r,'rkXo')||'0',10),p_ro:r.querySelector('#rkRo').value,p_xc:parseInt(val(r,'rkXc')||'0',10),p_rc:r.querySelector('#rkRc').value},'Ranking salvo'))}
   on('coAdd',()=>exec('definir_papel',{p_arroba:val(r,'coA'),p_papel:'conselho'},'Agora faz parte do Conselho'));on('coRem',()=>exec('definir_papel',{p_arroba:val(r,'coA'),p_papel:'morador'},'Saiu do Conselho'));on('reiOk',()=>{const a=val(r,'reiA');if(a&&confirm('Coroar '+a+' como Rei de Valdreinor?'))exec('definir_rei',{p_arroba:a},'Rei coroado')});on('guAdd',()=>exec('definir_guilda',{p_arroba:val(r,'guA'),p_on:true},'Chefe da Guilda nomeado'));on('guRem',()=>exec('definir_guilda',{p_arroba:val(r,'guA'),p_on:false},'Cargo retirado'))}}};
+
+// ================== GUERRA (o inimigo cerca o Portão Sul; cada um luta com o que tem) ==================
+const GU={d:null,off:0,ultId:null,fx:[],hit:0,shake:0,prox:0,carregando:false,ultIni:0,recarga:null,vistoAlarme:null};
+const GZ=(()=>{const P=VC.lugares['Muralha e Portão Sul']||[.464,.676];return{x:P[0],y:P[1],ex:P[0],ey:P[1]+.062,dx:P[0],dy:P[1]-.032}})();
+const INIMIGO={dragao:['🐉','Dragão'],demonio:['😈','Rei Demônio'],exercito:['⚔️','Exército'],lobos:['🐺','Lobos']};
+// o que cada classe faz (o servidor decide o dano de verdade; aqui é só para mostrar)
+const ARMA={espada:['🗡️','Golpe de espada'],furia:['🪓','Fúria do berserker'],escudo:['🛡️','Muralha de escudos'],magia:['🔥','Bola de fogo'],
+ mortos:['💀','Exército dos mortos'],tempo:['⏳','Congelar o tempo'],flecha:['🏹','Chuva de flechas'],cura:['✨','Luz que cura a muralha'],
+ bomba:['🧪','Bomba alquímica'],fera:['🐾','Ataque da fera'],punho:['👊','Punhos de ferro'],adaga:['🗡️','Golpe nas sombras'],
+ cancao:['🎵','Canção de guerra'],pedra:['🪨','Pedrada'],coroa:['👑','Poder da Coroa']};
+function armaDe(m){if(!m)return'pedra';if(m.papel==='coroa')return'coroa';const c=m.classe||'';
+ return /Guerreiro|Espadachim/.test(c)?'espada':c==='Berserker'?'furia':c==='Tank'?'escudo':c==='Mago'?'magia':c==='Necromante'?'mortos':c==='Cronomante'?'tempo':
+ /Arqueiro|Ranger/.test(c)?'flecha':c==='Clérigo'?'cura':c==='Alquimista'?'bomba':c==='Domador'?'fera':c==='Monge'?'punho':c==='Espião'?'adaga':c==='Bardo'?'cancao':'pedra'}
+const DESC_ARMA={espada:'dano forte',furia:'o maior dano entre os guerreiros',escudo:'dano e ainda reforça a muralha',magia:'dano alto à distância',mortos:'dano alto',
+ tempo:'dano e atrasa o próximo ataque do inimigo em 10 min',flecha:'dano forte à distância',cura:'conserta muito a muralha',bomba:'dano alto em área',fera:'dano forte',
+ punho:'dano forte',adaga:'pode acertar um golpe crítico',cancao:'dano e anima a tropa (reforça a muralha)',pedra:'dano pequeno',coroa:'o golpe mais forte do reino'};
+const GA=()=>GU.d&&GU.d.g&&GU.d.g.status==='ativa'?GU.d.g:null;
+GU.ativa=()=>!!GA();
+GU.sub=()=>{const g=GA();return g?'⚠️ '+g.nome+' ataca o reino!':'defenda o reino quando o alarme tocar'};
+const agoraSrv=()=>Date.now()+GU.off;
+function muralhaAgora(g){if(!g)return 0;const h=(agoraSrv()-new Date(g.ultimo_ataque).getTime())/3.6e6;return Math.max(0,Math.min(g.muralha_max,g.muralha-(h>0?g.ataque_hora*h:0)))}
+function tempo(ms){ms=Math.max(0,ms);const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),s=Math.floor(ms%6e4/1e3);return h?`${h}h ${String(m).padStart(2,'0')}min`:`${m}:${String(s).padStart(2,'0')}`}
+function proxGolpe(){const g=GA();if(!g||!GU.d.meu_ultimo)return 0;return Math.max(0,new Date(GU.d.meu_ultimo).getTime()+g.recarga_min*6e4-agoraSrv())}
+
+async function guerraCarrega(){if(!S.me||S.me.status!=='aprovado'||GU.carregando)return;GU.carregando=true;
+ try{const d=await API.rpc('guerra_ver',{});if(!d)return;if(d.agora)GU.off=new Date(d.agora).getTime()-Date.now();GU.d=d;
+  const g=GA();if(g&&GU.vistoAlarme!==g.id){GU.vistoAlarme=g.id;let visto='';try{visto=localStorage.getItem('vald_guerra')||''}catch(e){}
+   if(visto!==String(g.id)){try{localStorage.setItem('vald_guerra',String(g.id))}catch(e){}alarme(g)}}
+  guerraHUD()}catch(e){}finally{GU.carregando=false}}
+function alarme(g){const el=$('gAlarme');if(!el)return;el.innerHTML=`<div><small>ALARME DE GUERRA</small><b>${INIMIGO[g.inimigo][0]} ${esc(g.nome)}</b><span>cerca o Portão Sul. Toque em DEFENDER e lute com o que você tem!</span></div>`;
+ el.classList.add('on');setTimeout(()=>el.classList.remove('on'),4200);sfx('trompa')}
+
+// ---------- barra de guerra e botão ----------
+function guerraHUD(){const b=$('gBar'),bt=$('gBtn');if(!b)return;const d=GU.d,g=GA();
+ if(!g){const f=d&&d.g;const rec=f&&f.encerrada_em&&agoraSrv()-new Date(f.encerrada_em).getTime()<12*3.6e6&&f.status!=='cancelada';
+  bt.style.display='none';if(!rec){b.style.display='none';return}
+  const her=f.heroi&&S.byId[f.heroi];const txt={vitoria:`🏆 VITÓRIA sobre ${esc(f.nome)}${her?` · herói: <b>${esc(curto(her.nome))}</b>`:''}`,
+   derrota:`🔥 DERROTA · ${esc(f.nome)} deixou casas em ruínas`,recuou:`🛡️ ${esc(f.nome)} recuou · a muralha aguentou`}[f.status]||'';
+  b.className='fim '+f.status;b.style.display='block';b.innerHTML=`<div class="gfim">${txt}</div>`;return}
+ const vm=muralhaAgora(g),pv=Math.max(0,g.vida/g.vida_max),pm=vm/g.muralha_max;
+ b.className='';b.style.display='block';
+ b.innerHTML=`<div class="gt"><span>${INIMIGO[g.inimigo][0]} ${esc(g.nome)}</span><em>${tempo(new Date(g.fim).getTime()-agoraSrv())}</em></div>
+  <div class="gl"><i>Inimigo</i><div class="gb v"><s style="width:${(pv*100).toFixed(1)}%"></s></div><b>${fmt(g.vida)}</b></div>
+  <div class="gl"><i>Muralha</i><div class="gb m${pm<.3?' crit':''}"><s style="width:${(pm*100).toFixed(1)}%"></s></div><b>${fmt(Math.round(vm))}</b></div>`;
+ const a=armaDe(S.me),pr=proxGolpe();bt.style.display=cena?'none':'flex';bt.classList.toggle('esp',pr>0);
+ bt.innerHTML=pr>0?`<span>${ARMA[a][0]}</span><div><b>Recuperando</b><small>próximo golpe em ${tempo(pr)}</small></div>`:`<span>${ARMA[a][0]}</span><div><b>Defender</b><small>${ARMA[a][1]}</small></div>`}
+setInterval(()=>{if($('cidade').classList.contains('on'))guerraHUD()},1000);
+
+async function guerraGolpe(){const g=GA();if(!g)return toast('Não há guerra agora');if(proxGolpe()>0)return toast('Você ainda está recuperando o fôlego · '+tempo(proxGolpe()));
+ if(GU.golpeando)return;GU.golpeando=true;
+ if(cena)sairInt();const dd=Math.hypot(pl.x-GZ.dx,(pl.y-GZ.dy)*WH/WW);if(dd>.05){irPara(GZ.dx+(Math.random()-.5)*.03,GZ.dy+(Math.random()-.5)*.008);vivoEnvia(true)}
+ pl.dir=0;cam.livre=false;
+ try{const r=await API.rpc('golpear',{});const a=r.acao;GU.d.meu_ultimo=new Date(agoraSrv()).toISOString();
+  Object.assign(g,{vida:r.vida,muralha:r.muralha});golpeFX(S.uid,pl.x,pl.y,a,r.dano,r.cura,r.extra);
+  GU.d.ultimos=[{id:S.uid,acao:a,dano:r.dano,cura:r.cura,criado_em:new Date().toISOString()},...(GU.d.ultimos||[])].slice(0,12);
+  if(VIVO.on)VIVO.ch.send({type:'broadcast',event:'golpe',payload:{id:S.uid,a,d:r.dano,c:r.cura,e:r.extra||null,x:+pl.x.toFixed(5),y:+pl.y.toFixed(5),fim:r.status!=='ativa'}}).catch(()=>{});
+  toast(`${ARMA[a][0]} ${ARMA[a][1]}: ${r.dano?fmt(r.dano)+' de dano':''}${r.dano&&r.cura?' · ':''}${r.cura?'+'+fmt(r.cura)+' na muralha':''}${r.extra==='critico'?' · CRÍTICO!':''}`,3200);
+  if(r.status!=='ativa'){setTimeout(()=>{carregar().catch(()=>{})},1200)}guerraHUD()}
+ catch(e){toast(e.message,4000)}finally{GU.golpeando=false}}
+function guerraRecebe(p){if(!p||!p.id||!GA())return;const g=GA();const r=VIVO.rem[p.id];const x=r?r.x:(typeof p.x==='number'?p.x:GZ.dx),y=r?r.y:(typeof p.y==='number'?p.y:GZ.dy);
+ g.vida=Math.max(0,g.vida-(+p.d||0));g.muralha=Math.min(g.muralha_max,g.muralha+(+p.c||0));
+ if(ARMA[p.a])golpeFX(p.id,x,y,p.a,+p.d||0,+p.c||0,p.e);
+ GU.d.ultimos=[{id:p.id,acao:p.a,dano:+p.d||0,cura:+p.c||0,criado_em:new Date().toISOString()},...(GU.d.ultimos||[])].slice(0,12);
+ clearTimeout(GU.rk);GU.rk=setTimeout(()=>{p.fim?carregar().catch(()=>{}):guerraCarrega()},p.fim?1200:4000);guerraHUD()}
+
+// ---------- efeitos ----------
+const COR_ARMA={espada:'#e8eef8',furia:'#ff7a3a',escudo:'#9ad0ff',magia:'#ff8a2a',mortos:'#7dff8a',tempo:'#ffd166',flecha:'#e8d8a8',cura:'#8dfca8',bomba:'#ff6adf',
+ fera:'#f0c080',punho:'#f6e8c8',adaga:'#c08aff',cancao:'#ffd98a',pedra:'#b0a090',coroa:'#ffe27a'};
+function golpeFX(id,x,y,a,d,c,extra){const t=performance.now();const alvo=[GZ.ex+(Math.random()-.5)*.012,GZ.ey-.006+(Math.random()-.5)*.006];
+ const voa=/magia|mortos|flecha|bomba|pedra/.test(a);const atraso=voa?520:a==='coroa'?260:120;
+ GU.fx.push({k:a,t0:t,dur:atraso,de:[x,y-.006],para:alvo,voa});
+ setTimeout(()=>{GU.hit=performance.now();if(a==='coroa'||extra==='critico')GU.shake=performance.now();
+  if(d)GU.fx.push({k:'num',t0:performance.now(),dur:1300,para:[alvo[0]+(Math.random()-.5)*.006,alvo[1]-.012],txt:'-'+fmt(d)+(extra==='critico'?'!':''),cor:extra==='critico'?'#ffd166':'#ff6b5a',big:a==='coroa'||extra==='critico'});
+  if(c)GU.fx.push({k:'num',t0:performance.now()+150,dur:1300,para:[GZ.x+(Math.random()-.5)*.01,GZ.y-.004],txt:'+'+fmt(c)+' muralha',cor:'#8dfca8'});
+  GU.fx.push({k:'boom',a,t0:performance.now(),dur:a==='coroa'?900:520,para:alvo});
+  if(c)GU.fx.push({k:'brilho',t0:performance.now(),dur:1100,para:[GZ.x,GZ.y]});
+  sfx(a)},atraso);
+ if(id===S.uid)sfx('lanca')}
+// o inimigo ataca a muralha sozinho de tempos em tempos (só visual; o dano real é calculado no servidor pelo tempo)
+function ataqueInimigo(g){const t=performance.now();if(t-(GU.ultIni||0)<2900)return;GU.ultIni=t+Math.random()*900;
+ GU.fx.push({k:'ini_'+g.inimigo,t0:t,dur:1200,de:[GZ.ex,GZ.ey-.012],para:[GZ.x+(Math.random()-.5)*.02,GZ.y+.004]})}
+
+// ---------- sprites do inimigo (pixel art desenhada em baixa resolução e ampliada) ----------
+const GSPR=new Map();
+function spr(key,w,h,fn){let c=GSPR.get(key);if(c)return c;c=document.createElement('canvas');c.width=w+2;c.height=h+2;const x=c.getContext('2d');x.translate(1,1);fn(x);x.setTransform(1,0,0,1,0,0);
+ const im=x.getImageData(0,0,w+2,h+2),A=im.data,sol=new Uint8Array((w+2)*(h+2));for(let i=0;i<sol.length;i++){sol[i]=A[i*4+3]>110;if(A[i*4+3]){A[i*4+3]=sol[i]?255:0}}
+ for(let yy=0;yy<h+2;yy++)for(let xx=0;xx<w+2;xx++){const i=yy*(w+2)+xx;if(sol[i])continue;if((xx>0&&sol[i-1])||(xx<w+1&&sol[i+1])||(yy>0&&sol[i-w-2])||(yy<h+1&&sol[i+w+2])){A[i*4]=27;A[i*4+1]=24;A[i*4+2]=27;A[i*4+3]=255}}
+ x.putImageData(im,0,0);GSPR.set(key,c);return c}
+const px=(x,c,X,Y,W,H)=>{x.fillStyle=c;x.fillRect(X,Y,W||1,H||1)};
+function sprDragao(f,ferido){return spr('dr'+f+(ferido?'f':''),76,52,x=>{const cx=38,ab=[0,5,9,5][f];
+ // asas
+ for(const s of[-1,1]){x.fillStyle='#4a1016';x.beginPath();x.moveTo(cx+s*6,21);x.lineTo(cx+s*36,4+ab);x.lineTo(cx+s*34,15+ab*.6);x.lineTo(cx+s*30,27);x.lineTo(cx+s*22,31);x.lineTo(cx+s*13,30);x.closePath();x.fill();
+  x.fillStyle='#6a1a20';x.beginPath();x.moveTo(cx+s*7,22);x.lineTo(cx+s*30,9+ab*.8);x.lineTo(cx+s*24,26);x.lineTo(cx+s*13,28);x.closePath();x.fill();
+  x.strokeStyle='#26080a';x.lineWidth=1.2;x.beginPath();x.moveTo(cx+s*6,21);x.lineTo(cx+s*36,4+ab);x.moveTo(cx+s*20,13+ab*.5);x.lineTo(cx+s*22,31);x.moveTo(cx+s*28,9+ab*.7);x.lineTo(cx+s*30,27);x.stroke()}
+ // cauda
+ x.strokeStyle='#7a1a1a';x.lineWidth=4;x.beginPath();x.moveTo(cx,36);x.quadraticCurveTo(cx+12,46,cx+5,50);x.stroke();px(x,'#e8dcc0',cx+3,48,3,2);
+ // corpo e barriga
+ x.fillStyle=ferido?'#ffffff':'#8e1c1c';x.beginPath();x.ellipse(cx,29,9,12,0,0,7);x.fill();
+ x.fillStyle=ferido?'#ffffff':'#d8742a';x.beginPath();x.ellipse(cx,31,4.5,9,0,0,7);x.fill();for(let i=0;i<5;i++)px(x,'#a8521a',cx-3,24+i*3,7,1);
+ // patas
+ for(const s of[-1,1]){px(x,'#7a1616',cx+s*7-2,37,4,5);px(x,'#e8dcc0',cx+s*7-2,42,1,1);px(x,'#e8dcc0',cx+s*7+1,42,1,1)}
+ // pescoço e cabeça
+ x.fillStyle=ferido?'#ffffff':'#9a2020';x.fillRect(cx-3,13,6,9);x.beginPath();x.ellipse(cx,12,7,5.5,0,0,7);x.fill();x.beginPath();x.ellipse(cx,16,4.5,3.2,0,0,7);x.fill();
+ x.strokeStyle='#e8dcc0';x.lineWidth=1.6;x.beginPath();x.moveTo(cx-4,9);x.lineTo(cx-8,2);x.moveTo(cx+4,9);x.lineTo(cx+8,2);x.stroke();
+ px(x,'#ffe14a',cx-4,11,2,2);px(x,'#ffe14a',cx+2,11,2,2);px(x,'#2a0606',cx-2,18,4,1);px(x,'#ffffff',cx-2,18,1,1);px(x,'#ffffff',cx+1,18,1,1);
+ px(x,'#3a0808',cx-2,16,1,1);px(x,'#3a0808',cx+1,16,1,1)})}
+function sprDemonio(f,ferido){return spr('de'+f+(ferido?'f':''),44,60,x=>{const cx=22,b=f%2;const pele=ferido?'#fff':'#9a1a22',arm=ferido?'#fff':'#1e1418';
+ x.fillStyle='#3a0a14';x.beginPath();x.moveTo(cx-12,18);x.lineTo(cx+12,18);x.lineTo(cx+16,56);x.lineTo(cx-16,56);x.closePath();x.fill();// capa
+ px(x,arm,cx-9,18,18,20);px(x,'#4a3a40',cx-9,22,18,2);px(x,'#c0303a',cx-2,26,4,4);// peito
+ px(x,arm,cx-8,38,6,16);px(x,arm,cx+2,38,6,16);px(x,'#120c0e',cx-9,53,8,3);px(x,'#120c0e',cx+1,53,8,3);// pernas
+ px(x,pele,cx-14,19,5,15);px(x,pele,cx+9,19,5,15);px(x,arm,cx-15,18,7,5);px(x,arm,cx+8,18,7,5);// braços
+ // espada flamejante
+ px(x,'#5a3a2a',cx+11,33,2,5);px(x,'#d8b45a',cx+8,32,8,2);x.fillStyle='#ff6a2a';x.fillRect(cx+11,6+b,2,26);px(x,'#ffd27a',cx+11,8+b,1,22);
+ // cabeça e chifres
+ px(x,pele,cx-5,6,10,11);px(x,'#120c0e',cx-5,4,10,3);x.strokeStyle='#e8dcc0';x.lineWidth=2;x.beginPath();x.moveTo(cx-5,6);x.quadraticCurveTo(cx-11,3,cx-10,-1+b*0);x.moveTo(cx+5,6);x.quadraticCurveTo(cx+11,3,cx+10,-1);x.stroke();
+ px(x,'#ff2a2a',cx-3,10,2,2);px(x,'#ff2a2a',cx+1,10,2,2);px(x,'#2a0606',cx-2,14,4,1)})}
+function sprLobo(f){return spr('lb'+f,22,14,x=>{const p=f%2;px(x,'#3a3a46',3,4,14,6);px(x,'#4a4a58',4,4,12,3);px(x,'#3a3a46',15,1,6,6);px(x,'#2a2a34',19,4,3,2);
+ px(x,'#3a3a46',15,0,2,2);px(x,'#3a3a46',18,0,2,2);px(x,'#ffe14a',18,3,1,1);px(x,'#2a2a34',0,3,4,2);
+ px(x,'#2a2a34',4,10,2,3+p);px(x,'#2a2a34',8,10,2,4-p);px(x,'#2a2a34',12,10,2,3+p);px(x,'#2a2a34',15,10,2,4-p)})}
+
+function guerraEnts(ents,v,k){const gw=GA();if(!gw)return;const t=performance.now(),s=3*k,hitT=t-GU.hit,ferido=hitT<130;
+ const sh=t-GU.shake<500?Math.sin(t/18)*6*DPR*(1-(t-GU.shake)/500):0;ataqueInimigo(gw);
+ const ex=X(GZ.ex)+sh,ey=Y(GZ.ey);
+ if(gw.inimigo==='dragao'){const f=Math.floor(t/140)%4,alt=(6+Math.sin(t/400)*4)*s,ey2=Y(GZ.ey+.014);
+  ents.push({y:GZ.ey+.02,draw:()=>{g_sombra(ex,ey2+4*s,30*s,7*s);const im=sprDragao(f,ferido);const w=im.width*s*1.15,h=im.height*s*1.15;
+   aura(ex,ey2-alt-h*.45,w*.55,'255,60,40',.16+.05*Math.sin(t/200));g.imageSmoothingEnabled=false;g.drawImage(im,Math.round(ex-w/2),Math.round(ey2-alt-h),Math.round(w),Math.round(h))}})}
+ else if(gw.inimigo==='demonio'){const f=Math.floor(t/300)%2;
+  ents.push({y:GZ.ey+.004,draw:()=>{g_sombra(ex,ey,16*s,5*s);const im=sprDemonio(f,ferido);const w=im.width*s*.95,h=im.height*s*.95;aura(ex,ey-h*.5,w*.9,'200,30,60',.18);
+   g.imageSmoothingEnabled=false;g.drawImage(im,Math.round(ex-w/2),Math.round(ey-h),Math.round(w),Math.round(h))}});
+  [[-.03,.004],[.03,.004],[-.017,.012],[.017,.012]].forEach(([dx,dy],i)=>ents.push({y:GZ.ey+dy,draw:()=>desenha(g,X(GZ.ex+dx)+sh,Y(GZ.ey+dy),'#2a0a1a','#120808',0,Math.floor(t/260+i)%2,'',null,s,'','Espadachim','')}))}
+ else if(gw.inimigo==='exercito'){const L=[];for(let r=0;r<3;r++)for(let c=-2;c<=2;c++){if(r===2&&Math.abs(c)===2)continue;L.push([c*.012+(r%2)*.005,r*.009])}
+  L.forEach(([dx,dy],i)=>{const by=Math.sin(t/220+i)*.0006;ents.push({y:GZ.ey+dy,draw:()=>desenha(g,X(GZ.ex+dx)+sh,Y(GZ.ey+dy+by),i%3?'#3a3a44':'#5a1a1a','#1a1a1a',1,Math.floor(t/240+i)%2,'',null,s,'',i%4?'Guerreiro':'Tank','')})});
+  ents.push({y:GZ.ey+.017,draw:()=>{const bx=X(GZ.ex)+sh,by=Y(GZ.ey+.017);g.fillStyle='#5a3a2a';g.fillRect(bx-1*DPR,by-46*s/3*2,2*DPR*1.5,46*s/3*2);g.fillStyle='#1a1a1a';
+   const ond=Math.sin(t/300)*2*s/3;g.beginPath();g.moveTo(bx+2*DPR,by-46*s/3*2);g.lineTo(bx+26*s/3+ond,by-42*s/3*2);g.lineTo(bx+2*DPR,by-36*s/3*2);g.fill();g.fillStyle='#c0303a';g.fillRect(bx+6*s/3,by-43*s/3*2,6*s/3,4*s/3)}})}
+ else{for(let i=0;i<6;i++){const ph=t/900+i*1.7,dx=Math.sin(ph)*.03,dy=(i%3)*.007-.003,dir=Math.cos(ph)>0;const f=Math.floor(t/120+i)%2;
+  ents.push({y:GZ.ey+dy,draw:()=>{const im=sprLobo(f);const w=im.width*s*.9,h=im.height*s*.9,x0=X(GZ.ex+dx)+sh,y0=Y(GZ.ey+dy);g_sombra(x0,y0,8*s,2*s);g.save();g.translate(Math.round(x0),0);if(!dir)g.scale(-1,1);
+   g.imageSmoothingEnabled=false;g.drawImage(im,Math.round(-w/2),Math.round(y0-h),Math.round(w),Math.round(h));g.restore()}})}}}
+function g_sombra(x,y,rx,ry){g.fillStyle='rgba(0,0,0,.32)';g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill()}
+function aura(x,y,r,rgb,a){g.save();g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(${rgb},${a})`);gr.addColorStop(1,`rgba(${rgb},0)`);g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.restore()}
+
+// casas em ruínas (depois de uma derrota, até a próxima vitória)
+let PECA_CASA=null;
+function ruinas(k){const R=GU.d&&GU.d.ruinas;if(!R||!R.length)return;if(!PECA_CASA){PECA_CASA={};for(const p of VC.p){if(p[5])PECA_CASA[p[5]]=p}}
+ const t=performance.now(),v=vista();for(const n of R){const p=PECA_CASA[n];let x,y,w,h;if(p){const r=VC.r[p[0]][p[1]];x=(p[2]-v.x)*k;y=(p[3]-v.y)*k;w=r[2]*k;h=r[3]*k}else{const q=CASAS[n-1];if(!q)continue;w=60*k;h=60*k;x=X(q[0])-w/2;y=Y(q[1])-h}
+  if(x>cv.width||y>cv.height||x+w<0||y+h<0)continue;g.fillStyle='rgba(20,12,10,.55)';g.fillRect(x+w*.08,y+h*.25,w*.84,h*.7);
+  for(let i=0;i<5;i++){const ph=((t/2200+i/5)%1),sx=x+w*(.3+.4*((i*37)%10)/10)+Math.sin(t/700+i)*4*DPR,sy=y+h*.35-ph*h*.9;g.fillStyle=`rgba(70,64,62,${.45*(1-ph)})`;g.beginPath();g.arc(sx,sy,(5+ph*14)*DPR,0,7);g.fill()}
+  aura(x+w*.5,y+h*.75,w*.35,'255,120,40',.12+.06*Math.sin(t/120+n))}}
+
+function guerraFX(k){ruinas(k);const gw=GA();const t=performance.now();
+ if(gw){const pm=muralhaAgora(gw)/gw.muralha_max;if(pm<.65){const n=pm<.3?7:pm<.5?4:2;for(let i=0;i<n;i++){const fx_=X(GZ.x+((i*53)%11-5)*.0034),fy=Y(GZ.y-.006-(i%3)*.004);const a=.5+.3*Math.sin(t/90+i*2);
+   aura(fx_,fy-10*DPR*k,40*DPR*k,'255,130,40',.45*a);g.fillStyle=`rgba(255,${120+((i*40)%90)},30,${a})`;g.beginPath();g.moveTo(fx_-9*DPR*k,fy);g.quadraticCurveTo(fx_,fy-(46+12*Math.sin(t/70+i))*DPR*k,fx_+9*DPR*k,fy);g.fill();g.fillStyle=`rgba(255,240,170,${a})`;g.beginPath();g.moveTo(fx_-4*DPR*k,fy);g.quadraticCurveTo(fx_,fy-(22+6*Math.sin(t/50+i))*DPR*k,fx_+4*DPR*k,fy);g.fill()}}}
+ GU.fx=GU.fx.filter(f=>t<f.t0+f.dur);
+ for(const f of GU.fx){const p=(t-f.t0)/f.dur;if(p<0)continue;
+  if(f.k==='num'){const x=X(f.para[0]),y=Y(f.para[1])-p*40*DPR;g.globalAlpha=Math.min(1,(1-p)*2);g.font=`700 ${(f.big?28:20)*DPR}px "Pixelify Sans",system-ui`;g.textAlign='center';g.lineWidth=4*DPR;g.strokeStyle='#1b181b';g.strokeText(f.txt,x,y);g.fillStyle=f.cor;g.fillText(f.txt,x,y);g.globalAlpha=1;continue}
+  if(f.k==='boom'){const x=X(f.para[0]),y=Y(f.para[1]),c=COR_ARMA[f.a]||'#fff';
+   if(f.a==='coroa'){g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,226,122,${1-p})`;g.lineWidth=(8-6*p)*DPR;g.beginPath();let yy=-10,xx=x;g.moveTo(xx,yy);while(yy<y){yy+=30*DPR;xx=x+(Math.random()-.5)*26*DPR;g.lineTo(xx,Math.min(y,yy))}g.stroke();g.restore();aura(x,y,140*DPR*k*(1-p*.4),'255,220,120',.6*(1-p))}
+   else if(f.a==='tempo'){g.strokeStyle=`rgba(255,209,102,${1-p})`;g.lineWidth=3*DPR;g.beginPath();g.arc(x,y,(20+60*p)*DPR*k,0,7);g.stroke();g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(p*12)*24*DPR*k,y+Math.sin(p*12)*24*DPR*k);g.stroke()}
+   else if(/espada|furia|adaga|punho|fera|escudo/.test(f.a)){g.strokeStyle=c;g.globalAlpha=1-p;g.lineWidth=(5-3*p)*DPR;for(let i=0;i<(f.a==='furia'?3:2);i++){g.beginPath();g.arc(x+(i-1)*8*DPR,y,(26+i*6)*DPR*k,-2.4+p*1.2+i*.3,-0.9+p*1.2+i*.3);g.stroke()}g.globalAlpha=1}
+   else{aura(x,y,(30+70*p)*DPR*k,f.a==='mortos'?'110,255,140':f.a==='bomba'?'255,100,220':'255,150,60',.7*(1-p));for(let i=0;i<8;i++){const an=i/8*6.28;g.fillStyle=c;g.globalAlpha=1-p;g.fillRect(x+Math.cos(an)*p*40*DPR*k,y+Math.sin(an)*p*28*DPR*k,3*DPR,3*DPR)}g.globalAlpha=1}
+   continue}
+  if(f.k==='brilho'){for(let i=0;i<10;i++){const x=X(f.para[0])+((i*29)%21-10)*3*DPR*k,y=Y(f.para[1])-p*50*DPR*k-(i%4)*8*DPR;g.fillStyle=`rgba(141,252,168,${1-p})`;g.fillRect(x,y,3*DPR,3*DPR)}aura(X(f.para[0]),Y(f.para[1]),60*DPR*k,'140,255,170',.35*(1-p));continue}
+  if(f.k.startsWith('ini_')){const tipo=f.k.slice(4),x0=X(f.de[0]),y0=Y(f.de[1]),x1=X(f.para[0]),y1=Y(f.para[1]);
+   if(tipo==='dragao'){const yh=y0-(26*3*k+48*3*k*.62);for(let i=0;i<14;i++){const q=Math.min(1,p*1.6-i*.04);if(q<=0)continue;const x=x0+(x1-x0)*q+Math.sin(i*3+t/60)*8*DPR,y=yh+(y1-yh)*q;
+     aura(x,y,(10+q*16)*DPR*k*1.6,'255,'+(120+i*6)+',40',.55*(1-p))}}
+   else if(tipo==='lobos'){if(p<.5){g.strokeStyle=`rgba(230,230,240,${1-p*2})`;g.lineWidth=2*DPR;for(let i=0;i<3;i++){g.beginPath();g.moveTo(x1-12*DPR+i*8*DPR,y1-14*DPR);g.lineTo(x1-4*DPR+i*8*DPR,y1+4*DPR);g.stroke()}}}
+   else{for(let i=0;i<(tipo==='exercito'?5:3);i++){const q=Math.min(1,p*1.4-i*.08);if(q<=0||q>=1)continue;const xa=x0+(i-2)*14*DPR,x=xa+(x1-xa)*q,y=y0+(y1-y0)*q-Math.sin(q*3.14)*50*DPR*k;
+     if(tipo==='exercito'){g.strokeStyle='#d8c8a0';g.lineWidth=2*DPR;g.beginPath();g.moveTo(x,y);g.lineTo(x-(x1-xa)*.03,y+10*DPR);g.stroke()}else aura(x,y,14*DPR*k*2,'200,40,90',.8)}}
+   continue}
+  // projéteis e golpes a caminho
+  const x0=X(f.de[0]),y0=Y(f.de[1]),x1=X(f.para[0]),y1=Y(f.para[1]);const c=COR_ARMA[f.k]||'#fff';
+  if(f.voa){const x=x0+(x1-x0)*p,y=y0+(y1-y0)*p-Math.sin(p*3.14)*(f.k==='bomba'||f.k==='pedra'?60:20)*DPR*k;
+   if(f.k==='flecha'){for(let i=0;i<3;i++){g.strokeStyle=c;g.lineWidth=2*DPR;g.beginPath();g.moveTo(x+(i-1)*9*DPR,y);g.lineTo(x+(i-1)*9*DPR-(x1-x0)*.06,y-(y1-y0)*.06);g.stroke()}}
+   else if(f.k==='pedra'){g.fillStyle=c;g.fillRect(x-3*DPR,y-3*DPR,6*DPR,6*DPR)}
+   else{aura(x,y,16*DPR*k*1.6,f.k==='mortos'?'110,255,140':f.k==='bomba'?'255,100,220':'255,140,40',.9);g.fillStyle='#fff6d0';g.beginPath();g.arc(x,y,3*DPR*k*1.4,0,7);g.fill()}}
+  else if(f.k==='cura'||f.k==='cancao'){g.fillStyle=c;for(let i=0;i<6;i++)g.fillRect(x0+((i*13)%9-4)*3*DPR,y0-p*40*DPR-i*4*DPR,3*DPR,3*DPR)}
+  else if(f.k==='coroa'){aura(x0,y0-30*DPR*k,50*DPR*k,'255,226,122',.6*(1-p))}}}
+
+// ---------- sons (sintetizados, sem arquivo) ----------
+function sfx(tipo){if(!SOM.on||!SOM.ctx||window.__VIDEO)return;const C=SOM.ctx,t=C.currentTime,o=C.createGain();o.connect(C.destination);
+ const ruido=(dur,f,vol)=>{const b=C.createBuffer(1,C.sampleRate*dur,C.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);const s=C.createBufferSource();s.buffer=b;const fl=C.createBiquadFilter();fl.type='lowpass';fl.frequency.value=f;s.connect(fl);fl.connect(o);o.gain.setValueAtTime(vol,t);s.start(t)};
+ const tom=(f1,f2,dur,tipoOnda,vol)=>{const s=C.createOscillator();s.type=tipoOnda;s.frequency.setValueAtTime(f1,t);s.frequency.exponentialRampToValueAtTime(f2,t+dur);s.connect(o);o.gain.setValueAtTime(vol,t);o.gain.exponentialRampToValueAtTime(.001,t+dur);s.start(t);s.stop(t+dur)};
+ if(tipo==='trompa'){[0,.45].forEach(dt=>{const s=C.createOscillator(),gg=C.createGain();s.type='sawtooth';s.frequency.setValueAtTime(146,t+dt);s.frequency.linearRampToValueAtTime(220,t+dt+.25);const fl=C.createBiquadFilter();fl.type='lowpass';fl.frequency.value=900;s.connect(fl);fl.connect(gg);gg.connect(C.destination);gg.gain.setValueAtTime(0,t+dt);gg.gain.linearRampToValueAtTime(.12,t+dt+.08);gg.gain.linearRampToValueAtTime(0,t+dt+.42);s.start(t+dt);s.stop(t+dt+.45)});return}
+ if(tipo==='lanca')return tom(500,900,.12,'triangle',.05);
+ if(/cura|cancao/.test(tipo))return tom(660,1320,.4,'sine',.07);
+ if(tipo==='tempo')return tom(1200,300,.5,'sine',.07);
+ if(tipo==='coroa'){ruido(.8,2000,.25);return}
+ if(/magia|bomba|mortos/.test(tipo))return ruido(.45,900,.2);
+ ruido(.18,3000,.16)}
+
+// ---------- folha da guerra ----------
+P.guerra=()=>{const d=GU.d||{},g=GA(),a=armaDe(S.me);let h='';
+ if(g){const vm=muralhaAgora(g),pr=proxGolpe();
+  h+=`<div class="card gcard"><h4>${INIMIGO[g.inimigo][0]} ${esc(g.nome)}</h4><div class="meta">cerca o Portão Sul · termina em ${tempo(new Date(g.fim).getTime()-agoraSrv())}</div>
+   <div class="gl"><i>Inimigo</i><div class="gb v"><s style="width:${(g.vida/g.vida_max*100).toFixed(1)}%"></s></div><b>${fmt(g.vida)} / ${fmt(g.vida_max)}</b></div>
+   <div class="gl"><i>Muralha</i><div class="gb m"><s style="width:${(vm/g.muralha_max*100).toFixed(1)}%"></s></div><b>${fmt(Math.round(vm))} / ${fmt(g.muralha_max)}</b></div>
+   <p class="hint" style="margin-top:10px">Sua arma: <b>${ARMA[a][0]} ${ARMA[a][1]}</b> (${esc(S.me.classe||'sem classe')}) · ${DESC_ARMA[a]}.</p>
+   <button class="btn" id="gwGo" ${pr>0?'disabled style="opacity:.6"':''}>${pr>0?'Próximo golpe em '+tempo(pr):'⚔️ Defender o reino'}</button></div>`;
+  const rk=d.ranking||[];h+=`<div class="card"><h4>Defensores</h4>${rk.length?`<ul class="lst">${rk.map((r,i)=>`<li><span>${i===0?'🏆':i+1+'.'} ${esc(nomeDe(r.id))} <span class="at">${arDe(r.id)}</span></span><b>${r.dano?'⚔️ '+fmt(r.dano):''}${r.cura?' 🧱 +'+fmt(r.cura):''} · ${r.golpes}x</b></li>`).join('')}</ul>`:'<p class="hint">Ninguém lutou ainda. Seja o primeiro!</p>'}</div>`;
+  const ul=d.ultimos||[];if(ul.length)h+=`<div class="card"><h4>Últimos golpes</h4><ul class="lst">${ul.map(u=>`<li><span>${(ARMA[u.acao]||['⚔️'])[0]} ${esc(nomeDe(u.id))}</span><b>${u.dano?'-'+fmt(u.dano):''}${u.cura?' +'+fmt(u.cura)+' muralha':''}</b></li>`).join('')}</ul></div>`}
+ else h+=`<div class="card"><h4>🕊️ O reino está em paz</h4><p class="hint">Quando o Rei soar o alarme, um inimigo vai cercar o Portão Sul. Todo morador entra na cidade e luta com o que tem.</p>
+  <p class="hint">Sua arma: <b>${ARMA[a][0]} ${ARMA[a][1]}</b> · ${DESC_ARMA[a]}.</p></div>`;
+ h+=`<div class="card"><h4>Como funciona</h4><ul class="lst gcomo">
+  <li><span>⚔️ Um golpe a cada 20 minutos</span><b>não precisa ficar clicando</b></li>
+  <li><span>🔥 O inimigo castiga a muralha</span><b>o tempo todo</b></li>
+  <li><span>🏆 Inimigo cai</span><b>vitória · Valdins e XP pelo que você fez</b></li>
+  <li><span>🥇 Herói da batalha</span><b>+2.000 Valdins</b></li>
+  <li><span>🛡️ Prazo acaba</span><b>o inimigo recua · metade da recompensa</b></li>
+  <li><span>💥 Muralha cai</span><b>derrota · 5 casas em ruínas até a próxima vitória</b></li></ul>
+  <p class="hint" style="margin-top:8px">Cada classe luta de um jeito: guerreiros e berserkers batem forte, magos e necromantes atacam de longe, arqueiros mandam flechas, clérigos e bardos consertam a muralha, cronomantes atrasam o inimigo e espiões podem dar golpes críticos. Ferreiros, construtores, marceneiros e curandeiros também reforçam a muralha. Quanto maior o rank da sua classe, mais forte o golpe.</p></div>`;
+ const hi=d.historico||[];if(hi.length)h+=`<div class="card"><h4>Batalhas do reino</h4><ul class="lst">${hi.filter(x=>x.status!=='cancelada').map(x=>`<li><span>${INIMIGO[x.inimigo][0]} ${esc(x.nome)}</span><b>${({vitoria:'🏆 vitória',derrota:'🔥 derrota',recuou:'🛡️ recuou'})[x.status]||''}${x.heroi&&x.status==='vitoria'?' · '+esc(nomeDe(x.heroi)):''}</b></li>`).join('')}</ul></div>`;
+ return{t:'Guerra de Valdreinor',h,on:r=>{const b=r.querySelector('#gwGo');if(b)b.onclick=async()=>{fecharTudo();await guerraGolpe()}}}};
+$('gBar').onclick=()=>abrir('guerra');$('gBtn').onclick=e=>{e.stopPropagation();guerraGolpe()};
 
 // ================== INÍCIO ==================
 if(DEMO){const d=document.createElement('div');d.className='demo';d.textContent='MODO DEMONSTRAÇÃO · nada é salvo no servidor · entre com @valdreinor e qualquer senha para ver a Coroa';document.body.appendChild(d)}
