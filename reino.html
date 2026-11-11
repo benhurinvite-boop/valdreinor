@@ -335,7 +335,7 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
    cancelar_guerra(){if(!['coroa','rei'].includes(me().papel))throw new Error('Só o Rei ou o dono do reino encerram uma guerra');D.guerras.filter(x=>x.status==='ativa').forEach(x=>{x.status='cancelada';x.encerrada_em=now()})},
    golpear(){const m=apr(),g=gTick();if(!g)throw new Error('Não há guerra acontecendo agora');const ult=D.golpes.filter(x=>x.guerra===g.id&&x.morador===m.id).map(x=>x.criado_em).sort().pop();
     if(ult&&Date.now()-new Date(ult).getTime()<g.recarga_min*6e4)throw new Error('Você ainda está recuperando o fôlego. Próximo golpe às '+new Date(new Date(ult).getTime()+g.recarga_min*6e4).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
-    let ac=armaDe(Object.assign({},m,{papel:''}));const B={espada:[100,0],furia:[125,0],escudo:[60,70],magia:[115,0],mortos:[110,0],tempo:[85,0],flecha:[100,0],cura:[30,160],bomba:[105,0],fera:[100,0],punho:[95,0],adaga:[90,0],cancao:[55,70],pedra:[50,0]}[ac];
+    let ac=armaDe(Object.assign({},m,{papel:''}));const B={espada:[100,0],furia:[125,0],escudo:[60,70],magia:[115,0],mortos:[110,0],tempo:[85,0],flecha:[100,0],cura:[30,160],bomba:[105,0],fera:[100,0],punho:[95,0],adaga:[90,0],cancao:[55,70],pedra:[50,0],toupeira:[100,0]}[ac];
     let d=B[0]+(m.oficio==='Guarda'?20:m.oficio==='Caçador'?15:0),c=B[1]+(['Ferreiro','Construtor','Marceneiro','Curandeiro'].includes(m.oficio)?60:0);const ri=Math.max(0,'F E D C B A S SS'.split(' ').indexOf(m.rank_classe||'F'));
     let mu=(1+.08*ri)*(.8+Math.random()*.4)*(m.papel==='coroa'?3:m.papel==='rei'?1.5:1),ex=null;if(ac==='adaga'&&Math.random()<.35){mu*=2.2;ex='critico'}d=Math.round(d*mu);c=Math.round(c*mu);if(m.papel==='coroa')ac='coroa';
     g.vida=Math.max(0,g.vida-d);g.muralha=Math.min(g.muralha_max,g.muralha+c);if(ac==='tempo')g.ultimo_ataque=new Date(new Date(g.ultimo_ataque).getTime()+6e5).toISOString();
@@ -975,13 +975,13 @@ const INIMIGO={dragao:['🐉','Dragão'],demonio:['😈','Rei Demônio'],exercit
 const ARMA={espada:['🗡️','Golpe de espada'],furia:['🪓','Fúria do berserker'],escudo:['🛡️','Muralha de escudos'],magia:['🔥','Bola de fogo'],
  mortos:['💀','Exército dos mortos'],tempo:['⏳','Congelar o tempo'],flecha:['🏹','Chuva de flechas'],cura:['✨','Luz que cura a muralha'],
  bomba:['🧪','Bomba alquímica'],fera:['🐾','Ataque da fera'],punho:['👊','Punhos de ferro'],adaga:['🗡️','Golpe nas sombras'],
- cancao:['🎵','Canção de guerra'],pedra:['🪨','Pedrada'],coroa:['👑','Poder da Coroa']};
-function armaDe(m){if(!m)return'pedra';if(m.papel==='coroa')return'coroa';const c=m.classe||'';
+ cancao:['🎵','Canção de guerra'],pedra:['🪨','Pedrada'],toupeira:['⛏️','Colosso, a Toupeira Rei'],coroa:['👑','Poder da Coroa']};
+function armaDe(m){if(!m)return'pedra';if(m.papel==='coroa')return'coroa';if(m.ataque&&ARMA[m.ataque])return m.ataque;const c=m.classe||'';
  return /^(Guerreir|Espadach|Paladin|General)/.test(c)?'espada':/^Berserker/.test(c)?'furia':/^Tank/.test(c)?'escudo':/^Necromant/.test(c)?'mortos':/^Cronomant/.test(c)?'tempo':/^(Mago|Maga|Feiticeir|Brux)/.test(c)?'magia':
  /^(Arqueir|Ranger|Caçador|Explorador)/.test(c)?'flecha':/^(Clérig|Fada)/.test(c)?'cura':/^Alquimist/.test(c)?'bomba':/^Domador/.test(c)?'fera':/^Monge/.test(c)?'punho':/^Espi/.test(c)?'adaga':/^Bard/.test(c)?'cancao':'pedra'}
 const DESC_ARMA={espada:'dano forte',furia:'o maior dano entre os guerreiros',escudo:'dano e ainda reforça a muralha',magia:'dano alto à distância',mortos:'dano alto',
  tempo:'dano e atrasa o próximo ataque do inimigo em 10 min',flecha:'dano forte à distância',cura:'conserta muito a muralha',bomba:'dano alto em área',fera:'dano forte',
- punho:'dano forte',adaga:'pode acertar um golpe crítico',cancao:'dano e anima a tropa (reforça a muralha)',pedra:'dano pequeno',coroa:'o golpe mais forte do reino'};
+ punho:'dano forte',adaga:'pode acertar um golpe crítico',cancao:'dano e anima a tropa (reforça a muralha)',pedra:'dano pequeno',toupeira:'o Colosso sai da terra e ataca o inimigo',coroa:'o golpe mais forte do reino'};
 const GA=()=>GU.d&&GU.d.g&&GU.d.g.status==='ativa'?GU.d.g:null;
 GU.ativa=()=>!!GA();
 GU.sub=()=>{const g=GA();return g?'⚠️ '+g.nome+' ataca o reino!':'defenda o reino quando o alarme tocar'};
@@ -1033,14 +1033,14 @@ function guerraRecebe(p){if(!p||!p.id||!GA())return;const g=GA();const r=VIVO.re
 
 // ---------- efeitos ----------
 const COR_ARMA={espada:'#e8eef8',furia:'#ff7a3a',escudo:'#9ad0ff',magia:'#ff8a2a',mortos:'#7dff8a',tempo:'#ffd166',flecha:'#e8d8a8',cura:'#8dfca8',bomba:'#ff6adf',
- fera:'#f0c080',punho:'#f6e8c8',adaga:'#c08aff',cancao:'#ffd98a',pedra:'#b0a090',coroa:'#ffe27a'};
+ fera:'#f0c080',punho:'#f6e8c8',adaga:'#c08aff',cancao:'#ffd98a',pedra:'#b0a090',toupeira:'#a8723a',coroa:'#ffe27a'};
 function golpeFX(id,x,y,a,d,c,extra){const t=performance.now();const alvo=[GZ.ex+(Math.random()-.5)*.012,GZ.ey-.006+(Math.random()-.5)*.006];
  const voa=/magia|mortos|flecha|bomba|pedra/.test(a);const atraso=voa?520:a==='coroa'?260:120;
  GU.fx.push({k:a,t0:t,dur:atraso,de:[x,y-.006],para:alvo,voa});
  setTimeout(()=>{GU.hit=performance.now();if(a==='coroa'||extra==='critico')GU.shake=performance.now();
   if(d)GU.fx.push({k:'num',t0:performance.now(),dur:1300,para:[alvo[0]+(Math.random()-.5)*.006,alvo[1]-.012],txt:'-'+fmt(d)+(extra==='critico'?'!':''),cor:extra==='critico'?'#ffd166':'#ff6b5a',big:a==='coroa'||extra==='critico'});
   if(c)GU.fx.push({k:'num',t0:performance.now()+150,dur:1300,para:[GZ.x+(Math.random()-.5)*.01,GZ.y-.004],txt:'+'+fmt(c)+' muralha',cor:'#8dfca8'});
-  GU.fx.push({k:'boom',a,t0:performance.now(),dur:a==='coroa'?900:520,para:alvo});
+  GU.fx.push({k:'boom',a,t0:performance.now(),dur:a==='coroa'?900:a==='toupeira'?1100:520,para:alvo});
   if(c)GU.fx.push({k:'brilho',t0:performance.now(),dur:1100,para:[GZ.x,GZ.y]});
   sfx(a)},atraso);
  if(id===S.uid)sfx('lanca')}
@@ -1103,6 +1103,11 @@ function guerraEnts(ents,v,k){const gw=GA();if(!gw)return;const t=performance.no
  else{for(let i=0;i<6;i++){const ph=t/900+i*1.7,dx=Math.sin(ph)*.03,dy=(i%3)*.007-.003,dir=Math.cos(ph)>0;const f=Math.floor(t/120+i)%2;
   ents.push({y:GZ.ey+dy,draw:()=>{const im=sprLobo(f);const w=im.width*s*.9,h=im.height*s*.9,x0=X(GZ.ex+dx)+sh,y0=Y(GZ.ey+dy);g_sombra(x0,y0,8*s,2*s);g.save();g.translate(Math.round(x0),0);if(!dir)g.scale(-1,1);
    g.imageSmoothingEnabled=false;g.drawImage(im,Math.round(-w/2),Math.round(y0-h),Math.round(w),Math.round(h));g.restore()}})}}}
+function sprToupeira(f){return spr('tp'+f,34,28,x=>{const cx=17;x.fillStyle='#5a3a26';x.beginPath();x.ellipse(cx,17,13,11,0,0,7);x.fill();
+ x.fillStyle='#7a5034';x.beginPath();x.ellipse(cx,19,8,8,0,0,7);x.fill();
+ px(x,'#d8b45a',cx-6,3,12,3);px(x,'#d8b45a',cx-6,0,2,3);px(x,'#d8b45a',cx-1,-1,2,4);px(x,'#d8b45a',cx+4,0,2,3);px(x,'#c0303a',cx-1,4,2,1);
+ px(x,'#1a1010',cx-6,11,2,2);px(x,'#1a1010',cx+4,11,2,2);px(x,'#e8a0a0',cx-3,14,6,4);px(x,'#c06a6a',cx-2,15,4,2);
+ const a=f%2;for(const s_ of[-1,1]){px(x,'#5a3a26',cx+s_*14-3,15-a,6,6);px(x,'#e8dcc0',cx+s_*16-2,13-a,1,3);px(x,'#e8dcc0',cx+s_*17-1,14-a,1,3);px(x,'#e8dcc0',cx+s_*15-1,12-a,1,3)}})}
 function g_sombra(x,y,rx,ry){g.fillStyle='rgba(0,0,0,.32)';g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill()}
 function aura(x,y,r,rgb,a){g.save();g.globalCompositeOperation='lighter';const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(${rgb},${a})`);gr.addColorStop(1,`rgba(${rgb},0)`);g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.restore()}
 
@@ -1123,6 +1128,9 @@ function guerraFX(k){ruinas(k);const gw=GA();const t=performance.now();
   if(f.k==='boom'){const x=X(f.para[0]),y=Y(f.para[1]),c=COR_ARMA[f.a]||'#fff';
    if(f.a==='coroa'){g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,226,122,${1-p})`;g.lineWidth=(8-6*p)*DPR;g.beginPath();let yy=-10,xx=x;g.moveTo(xx,yy);while(yy<y){yy+=30*DPR;xx=x+(Math.random()-.5)*26*DPR;g.lineTo(xx,Math.min(y,yy))}g.stroke();g.restore();aura(x,y,140*DPR*k*(1-p*.4),'255,220,120',.6*(1-p))}
    else if(f.a==='tempo'){g.strokeStyle=`rgba(255,209,102,${1-p})`;g.lineWidth=3*DPR;g.beginPath();g.arc(x,y,(20+60*p)*DPR*k,0,7);g.stroke();g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(p*12)*24*DPR*k,y+Math.sin(p*12)*24*DPR*k);g.stroke()}
+   else if(f.a==='toupeira'){const sob=p<.25?p/.25:p>.75?(1-p)/.25:1,s=3*DPR*k*1.7,im=sprToupeira(Math.floor(p*10)%2),w=im.width*s,h=im.height*s;
+    g.fillStyle='#4a3020';g.beginPath();g.ellipse(x,y,w*.55,h*.14,0,0,7);g.fill();g.save();g.beginPath();g.rect(x-w,y-h*1.2,w*2,h*1.2);g.clip();g.imageSmoothingEnabled=false;g.drawImage(im,Math.round(x-w/2),Math.round(y-h*sob*.9),Math.round(w),Math.round(h));g.restore();
+    g.fillStyle='#7a5a3a';for(let i=0;i<14;i++){const an=i/14*6.28,rr_=(20+p*70)*DPR*k;g.globalAlpha=Math.max(0,1-p*1.3);g.fillRect(x+Math.cos(an)*rr_,y+Math.sin(an)*rr_*.35-p*30*DPR*k*Math.abs(Math.sin(an*3)),4*DPR,4*DPR)}g.globalAlpha=1}
    else if(/espada|furia|adaga|punho|fera|escudo/.test(f.a)){g.strokeStyle=c;g.globalAlpha=1-p;g.lineWidth=(5-3*p)*DPR;for(let i=0;i<(f.a==='furia'?3:2);i++){g.beginPath();g.arc(x+(i-1)*8*DPR,y,(26+i*6)*DPR*k,-2.4+p*1.2+i*.3,-0.9+p*1.2+i*.3);g.stroke()}g.globalAlpha=1}
    else{aura(x,y,(30+70*p)*DPR*k,f.a==='mortos'?'110,255,140':f.a==='bomba'?'255,100,220':'255,150,60',.7*(1-p));for(let i=0;i<8;i++){const an=i/8*6.28;g.fillStyle=c;g.globalAlpha=1-p;g.fillRect(x+Math.cos(an)*p*40*DPR*k,y+Math.sin(an)*p*28*DPR*k,3*DPR,3*DPR)}g.globalAlpha=1}
    continue}
@@ -1152,6 +1160,7 @@ function sfx(tipo){if(!SOM.on||!SOM.ctx||window.__VIDEO)return;const C=SOM.ctx,t
  if(/cura|cancao/.test(tipo))return tom(660,1320,.4,'sine',.07);
  if(tipo==='tempo')return tom(1200,300,.5,'sine',.07);
  if(tipo==='coroa'){ruido(.8,2000,.25);return}
+ if(tipo==='toupeira'){ruido(.8,350,.32);return}
  if(/magia|bomba|mortos/.test(tipo))return ruido(.45,900,.2);
  ruido(.18,3000,.16)}
 
