@@ -19,6 +19,15 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--red);box
 label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin:14px 0 6px}
 .hint{font:14px var(--serif);color:var(--ink2);margin-top:4px}
 .scr{position:fixed;inset:0;display:none}
+#historia{background:#000;overflow:hidden}#hCv{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}
+#hLobby,#hPainel{position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(6,4,10,.92) 22%);color:#f3e6c4;text-align:center}
+#hLobby{top:auto;max-height:78%;overflow:auto}#hLobby h2{font:400 34px var(--tit);color:var(--gold);margin:2px 0}
+.hcap{font:700 13px 'Pixelify Sans',system-ui;letter-spacing:.2em;text-transform:uppercase;color:#c9a86a}.hsub{font:15px var(--serif);color:#d8c9a4;margin:4px 0 10px}
+.hcod{margin:10px auto;padding:10px;border:1.5px dashed #c9a86a;border-radius:8px;max-width:320px;font:13px var(--serif);color:#d8c9a4}.hcod b{display:block;font:700 34px 'Pixelify Sans';letter-spacing:.18em;color:var(--gold)}.hcod small{display:block;margin-top:4px}
+.hmem{display:flex;justify-content:center;gap:10px;margin:8px 0 12px}.hmem div{display:flex;flex-direction:column;align-items:center;font:13px var(--serif)}.hmem canvas{width:64px;height:80px;image-rendering:pixelated}
+.hfala{max-width:460px;margin:0 auto;background:rgba(20,14,24,.88);border:1.5px solid #8a6a2a;border-radius:10px;padding:12px 14px}.hfala b{font:400 18px var(--tit);color:var(--gold)}.hfala p{font:17px/1.4 var(--serif);margin:6px 0}
+.hbts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.hfala .btn.sec{display:block;width:100%;margin:8px 0 0}
+#hPainel .lnk,#hLobby .lnk{color:#e8b0a0}
 .scr.on{display:block}
 /* portão */
 #portao,#cadastro,#espera,#reinos{background:radial-gradient(ellipse at 50% 25%,#2a1410,#140b08 55%,#0b0605);overflow:auto}
@@ -167,6 +176,8 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
  <p class="hint" style="margin-top:18px">Se você segue a página, você já mora aqui. · <a href="/" style="color:var(--red)">voltar ao site</a></p>
 </div></section>
 
+<!-- ============ MODO HISTÓRIA ============ -->
+<section class="scr" id="historia"><canvas id="hCv"></canvas><div id="hLobby"></div><div id="hPainel" style="display:none"></div></section>
 <!-- ============ ESCOLHA DO REINO ============ -->
 <section class="scr" id="reinos"><div class="gate par">
  <img src="brasao.png" alt="">
@@ -311,6 +322,10 @@ const Mock=(()=>{const K='vald_demo_v1'+(SRV>1?'_s'+SRV:'');let D;try{D=JSON.par
  const ids=a=>[...new Set((a||[]).filter(x=>arr(x)).map(x=>byA(x).id))];
  const ocup=u=>D.missoes.some(x=>['pedida','aberta'].includes(x.status)&&(x.lider===u||x.membros.includes(u)))||(D.moradores.find(m=>m.id===u)?.descanso_ate>now());
  const F={
+  historia_iniciar(a){const m=me();if(!m)throw new Error('Entre no reino primeiro');D.hini=D.hini||{};D.hini[m.id]=Date.now();return null},
+  historia_concluir(a){const m=me();if(!m||m.status!=='aprovado')throw new Error('Entre no reino primeiro');D.historia=D.historia||{};const k=m.id+':'+(a.p_capitulo||1);const h=D.historia[k];const hoje=now().slice(0,10);
+   if(h&&h.dia===hoje)return{primeira:false,xp:0,valdins:0};const primeira=!h;const xp=primeira?250:50,v=primeira?2500:300;D.historia[k]={dia:hoje,vezes:(h?h.vezes:0)+1};
+   m.saldo+=v;m.xp_classe=(m.xp_classe||0)+xp;tx(null,m.id,v,'historia','Modo história · Capítulo '+(a.p_capitulo||1));av(m.id,'📖 Capítulo '+(a.p_capitulo||1)+' concluído: +'+v+' Valdins e +'+xp+' XP de classe.');save();return{primeira,xp,valdins:v}},
   meus_servidores(){const u=D.me;const meus=[];for(const sv of GA.srv){let d=null;try{d=JSON.parse(localStorage.getItem('vald_demo_v1'+(sv.id>1?'_s'+sv.id:''))||'null')}catch(e){}
     const m=d&&d.moradores.find(x=>x.conta===u);if(m||sv.dono===u)meus.push({id:sv.id,nome:sv.nome,oficial:!!sv.oficial,publico:sv.publico,codigo:sv.dono===u?sv.codigo:null,sou_dono:sv.dono===u,personagem:m?m.nome:null,status:m?m.status:null,moradores:d?d.moradores.filter(x=>x.status==='aprovado').length:0})}
    const pub=GA.srv.filter(sv=>sv.publico&&!meus.some(x=>x.id===sv.id)).map(sv=>{let d=null;try{d=JSON.parse(localStorage.getItem('vald_demo_v1'+(sv.id>1?'_s'+sv.id:''))||'null')}catch(e){}return{id:sv.id,nome:sv.nome,oficial:!!sv.oficial,moradores:d?d.moradores.filter(x=>x.status==='aprovado').length:0}});
@@ -769,7 +784,8 @@ function abrirMenu(){const m=S.me;const ofertas=S.ofertas.filter(o=>o.comprador=
  ${I('💰','O seu cofre','banco, mochila e o seu negócio','cofre',ofertas||'')}
  <div id="subCofre" style="display:none">${I('🏦','Banco de Valdreinor',fmt(m.saldo)+' Valdins','banco','','sub')}${I('🎒','Mochila',S.itens.filter(i=>i.dono===S.uid).length+'/20 espaços','mochila',ofertas||'','sub')}${I('🔨','Meu negócio','oficina e loja','negocio','','sub')}</div>
  ${I('🏰','Reino: '+esc((S.srv&&S.srv.nome)||'Valdreinor'),S.srv&&S.srv.oficial?'servidor oficial · trocar de reino':'convidar amigos · trocar de reino','reino','')}
-  ${I('📜','Missões','mural, diário e feitos','missoes',minhaMis||'')}
+  ${I('📖','Modo história','jogue sozinho ou com amigos do reino','historia','')}
+ ${I('📜','Missões','mural, diário e feitos','missoes',minhaMis||'')}
   ${I('⚔️','Guerra',GU.sub(),'guerra',GU.ativa()?'!':'',GU.ativa()?'coroa':'')}
  ${I('🛡️','Clãs','junte 10 @ e peça um castelo','clas')}
  ${I('⚖️','Justiça e avisos','leve um caso à Coroa','justica',novosAvisos()||'')}
@@ -1239,6 +1255,195 @@ P.guerra=()=>{const d=GU.d||{},g=GA(),a=armaDe(S.me);let h='';
  const hi=d.historico||[];if(hi.length)h+=`<div class="card"><h4>Batalhas do reino</h4><ul class="lst">${hi.filter(x=>x.status!=='cancelada').map(x=>`<li><span>${INIMIGO[x.inimigo][0]} ${esc(x.nome)}</span><b>${({vitoria:'🏆 vitória',derrota:'🔥 derrota',recuou:'🛡️ recuou'})[x.status]||''}${x.heroi&&x.status==='vitoria'?' · '+esc(nomeDe(x.heroi)):''}</b></li>`).join('')}</ul></div>`;
  return{t:'Guerra de Valdreinor',h,on:r=>{const b=r.querySelector('#gwGo');if(b)b.onclick=async()=>{fecharTudo();await guerraGolpe()}}}};
 $('gBar').onclick=()=>abrir('guerra');$('gBtn').onclick=e=>{e.stopPropagation();guerraGolpe()};
+
+// ================== MODO HISTÓRIA (sozinho ou em grupo com amigos do mesmo reino) ==================
+const HIST={ini:false,st:null,host:false,sala:null,ch:null,membros:{},fx:[],raf:null,visto:0,conclui:false,lo:null};
+// golpes de cada arma: [nome do especial, recarga em turnos, tipo]
+const ESPECIAL={espada:['Golpe giratório',3,'area'],furia:['Fúria cega',3,'forte'],escudo:['Muralha de escudos',3,'protege'],magia:['Chuva de fogo',3,'area'],
+ mortos:['Erguer esqueleto',3,'forte'],tempo:['Congelar o tempo',4,'congela'],flecha:['Tiro duplo',2,'duplo'],cura:['Luz curadora',3,'cura'],bomba:['Frasco explosivo',3,'area'],
+ fera:['Investida da fera',3,'forte'],punho:['Sequência de punhos',2,'duplo'],adaga:['Golpe nas sombras',3,'critico'],cancao:['Canção de coragem',3,'canta'],
+ pedra:['Pedrada certeira',2,'forte'],toupeira:['Colosso, a Toupeira Rei',3,'area'],coroa:['Julgamento da Coroa',4,'raio']};
+const BASE_ARMA={espada:30,furia:36,escudo:25,magia:32,mortos:31,tempo:26,flecha:29,cura:21,bomba:30,fera:29,punho:27,adaga:27,cancao:24,pedra:25,toupeira:30,coroa:60};
+const RANKS='F E D C B A S SS'.split(' ');
+function heroiDe(m){const a=armaDe(m),ri=Math.max(0,RANKS.indexOf(m.rank_classe||'F'));const mult=1+.08*ri;
+ return{uid:m.id,nome:curto(m.nome),classe:m.classe||'',t:m.cor,h:m.cabelo,arma:a,hp:Math.round((a==='escudo'?150:a==='cura'?110:120)*mult),hpMax:Math.round((a==='escudo'?150:a==='cura'?110:120)*mult),atk:Math.round(BASE_ARMA[a]*mult),cd:0,protegido:0,coragem:0}}
+// ---------- capítulos ----------
+const CAPS=[{n:1,titulo:'A Pedra Antiga',sub:'Antes das muralhas, Valdreinor era só uma pedra no meio da floresta.',
+ roteiro:[
+  {f:'narra',t:'Há muito tempo, antes das muralhas, Valdreinor era só uma pedra antiga no meio da floresta.'},
+  {f:'narra',t:'Dois viajantes acenderam uma fogueira ao lado dela. Foi ali que tudo começou.'},
+  {f:'narra',t:'Numa noite sem lua, você chega à clareira. A fogueira está quase apagando.'},
+  {f:'fala',q:'O Cronista',t:'Viajante! Ainda bem que você veio. Os Lobos Sombrios estão rondando a Pedra Antiga.'},
+  {f:'luta',ini:['lobo','lobo']},
+  {f:'fala',q:'O Cronista',t:'A pedra guarda as runas do reino. Se a fogueira apagar, os lobos tomam a clareira.'},
+  {f:'escolha',t:'O que o grupo faz?',op:[{t:'🪵 Buscar lenha na floresta escura',ramo:'lenha'},{t:'🔥 Ficar e proteger a fogueira',ramo:'fogo'}]},
+  {f:'ramo',lenha:[{f:'narra',t:'Entre as árvores, olhos vermelhos acendem no escuro.'},{f:'luta',ini:['lobo','lobo','lobo']},{f:'narra',t:'Vocês voltam com os braços cheios de lenha. A fogueira cresce e ilumina a clareira.'}],
+          fogo:[{f:'narra',t:'Os lobos testam a defesa do grupo, um de cada vez.'},{f:'luta',ini:['lobo','lobo']},{f:'narra',t:'A fogueira resiste, mas está fraca.'}]},
+  {f:'narra',t:'Um uivo enorme corta a floresta. As árvores tremem.'},
+  {f:'fala',q:'O Cronista',t:'É Fenrak, o Lobo Alfa! Ele lidera a alcateia. Protejam a Pedra Antiga!'},
+  {f:'luta',ini:['alfa','lobo'],chefe:1},
+  {f:'fala',q:'O Cronista',t:'A Pedra Antiga está a salvo. Hoje, vocês ajudaram a fundar Valdreinor.'},
+  {f:'fim'}]},
+ {n:2,titulo:'A Noite do Dragão',sub:'Em breve',bloqueado:1},{n:3,titulo:'O Rei Demônio no Pico',sub:'Em breve',bloqueado:1}];
+const INIMIGO_H={lobo:{nome:'Lobo Sombrio',hp:40,atk:7},alfa:{nome:'Fenrak, o Lobo Alfa',hp:190,atk:12}};
+const ESC_HP=[0,.55,1.2,1.75,2.3],ESC_ATK=[0,.75,1.05,1.25,1.45];
+function novoInimigo(k,n){const b=INIMIGO_H[k];const hp=Math.round(b.hp*ESC_HP[n]);return{k,nome:b.nome,hp,hpMax:hp,atk:Math.max(3,Math.round(b.atk*ESC_ATK[n])),congelado:0}}
+function roteiroPlano(cap,ramo){const out=[];for(const p of cap.roteiro){if(p.f==='ramo'){if(ramo)out.push(...p[ramo]);else out.push({f:'aguarda'})}else out.push(p)}return out}
+// ---------- motor (roda no anfitrião) ----------
+function novoEstado(cap,herois){if(herois.length===1&&['cura','cancao','escudo'].includes(herois[0].arma))herois[0].atk=Math.round(herois[0].atk*1.4);return{cap:cap.n,passo:0,ramo:null,fase:'fala',herois,inimigos:[],turno:0,rodada:0,ev:[],seq:0,txt:'',quem:'',escolha:null,resultado:null}}
+function evento(st,e){st.seq++;e.s=st.seq;st.ev.push(e);if(st.ev.length>30)st.ev.shift()}
+function passoAtual(st){const cap=CAPS.find(c=>c.n===st.cap);return roteiroPlano(cap,st.ramo)[st.passo]}
+function prepara(st){const p=passoAtual(st);if(!p){st.fase='fim';return}
+ if(p.f==='narra'||p.f==='fala'){st.fase='fala';st.quem=p.q||'';st.txt=p.t}
+ else if(p.f==='escolha'){st.fase='escolha';st.txt=p.t;st.escolha=p.op.map(o=>o.t)}
+ else if(p.f==='luta'){const n=st.herois.length;st.inimigos=p.ini.map(k=>novoInimigo(k,n));
+  st.fase='luta';st.turno=proximoVivo(st,-1);st.rodada=1;st.chefe=!!p.chefe;st.txt=st.chefe?'O chefe chegou!':'Lutem!';evento(st,{t:'inicio'})}
+ else if(p.f==='fim'){st.fase='fim';st.txt='Capítulo concluído!'}}
+function proximoVivo(st,i){for(let k=i+1;k<st.herois.length;k++)if(st.herois[k].hp>0)return k;return -1}
+function avancar(st){if(st.fase!=='fala')return;st.passo++;prepara(st)}
+function escolher(st,i){const p=passoAtual(st);if(st.fase!=='escolha'||!p.op[i])return;st.ramo=p.op[i].ramo;st.passo++;prepara(st)}
+function vivosIni(st){return st.inimigos.map((x,i)=>i).filter(i=>st.inimigos[i].hp>0)}
+function dano(st,ii,v,quem){const e=st.inimigos[ii];if(!e||e.hp<=0)return;e.hp=Math.max(0,e.hp-v);evento(st,{t:'dano',a:'i'+ii,v,de:quem});if(e.hp<=0)evento(st,{t:'cai',a:'i'+ii})}
+function agir(st,hi,tipo,alvo){if(st.fase!=='luta'||st.turno!==hi)return false;const h=st.herois[hi];if(!h||h.hp<=0)return false;
+ const vivos=vivosIni(st);if(!vivos.length)return false;if(!vivos.includes(alvo))alvo=vivos[0];const var_=()=>.85+Math.random()*.3;const bonus=h.coragem>0?1.3:1;
+ if(tipo==='esp'&&h.cd>0)tipo='atk';
+ if(tipo==='atk'){dano(st,alvo,Math.round(h.atk*var_()*bonus),hi);evento(st,{t:'golpe',de:hi,arma:h.arma,a:'i'+alvo})}
+ else{const [nome,rc,k]=ESPECIAL[h.arma];h.cd=rc;evento(st,{t:'especial',de:hi,arma:h.arma,nome});
+  if(k==='area')vivos.forEach(i=>dano(st,i,Math.round(h.atk*.75*var_()*bonus),hi));
+  else if(k==='forte')dano(st,alvo,Math.round(h.atk*1.8*var_()*bonus),hi);
+  else if(k==='duplo'){dano(st,alvo,Math.round(h.atk*.8*var_()*bonus),hi);const v2=vivosIni(st);if(v2.length)dano(st,v2.includes(alvo)?alvo:v2[0],Math.round(h.atk*.8*var_()*bonus),hi)}
+  else if(k==='critico')dano(st,alvo,Math.round(h.atk*2.4*bonus),hi);
+  else if(k==='raio')vivos.forEach(i=>dano(st,i,Math.round(h.atk*1.6*var_()),hi));
+  else if(k==='congela'){dano(st,alvo,Math.round(h.atk*.6),hi);st.inimigos[alvo].congelado=2;evento(st,{t:'congela',a:'i'+alvo})}
+  else if(k==='cura'){st.herois.forEach((x,j)=>{if(x.hp>0){const v=Math.round(x.hpMax*.35);x.hp=Math.min(x.hpMax,x.hp+v);evento(st,{t:'cura',a:'h'+j,v})}})}
+  else if(k==='protege'){st.herois.forEach(x=>x.protegido=2);evento(st,{t:'protege'})}
+  else if(k==='canta'){st.herois.forEach(x=>x.coragem=3);evento(st,{t:'canta'})}}
+ // fim da luta?
+ if(!vivosIni(st).length){fimLuta(st);return true}
+ const nx=proximoVivo(st,hi);if(nx>=0){st.turno=nx}else{inimigosAgem(st)}return true}
+function inimigosAgem(st){st.turno=-1;
+ st.inimigos.forEach((e,i)=>{if(e.hp<=0)return;if(e.congelado>0){e.congelado--;evento(st,{t:'congelado',a:'i'+i});return}
+  const alvos=st.herois.map((x,j)=>j).filter(j=>st.herois[j].hp>0);if(!alvos.length)return;const j=alvos[Math.floor(Math.random()*alvos.length)];const h=st.herois[j];
+  let v=Math.round(e.atk*(.85+Math.random()*.3));if(e.k==='alfa'&&st.rodada%3===0){v=Math.round(v*1.4);evento(st,{t:'uivo',de:'i'+i})}if(h.protegido>0)v=Math.round(v*.5);
+  h.hp=Math.max(0,h.hp-v);evento(st,{t:'mordida',de:'i'+i,a:'h'+j,v});if(h.hp<=0)evento(st,{t:'tomba',a:'h'+j})});
+ // o Alfa chama mais um lobo a cada 3 rodadas
+ const alfa=st.inimigos.find(e=>e.k==='alfa'&&e.hp>0);if(alfa&&st.rodada%4===3&&st.inimigos.filter(e=>e.hp>0).length<4){const n=st.herois.length;st.inimigos.push(novoInimigo('lobo',n));evento(st,{t:'chamado'})}
+ st.herois.forEach(h=>{if(h.cd>0)h.cd--;if(h.protegido>0)h.protegido--;if(h.coragem>0)h.coragem--});
+ if(!st.herois.some(h=>h.hp>0)){st.fase='derrota';st.txt='O grupo caiu… mas a Pedra Antiga ainda espera.';return}
+ st.rodada++;st.turno=proximoVivo(st,-1)}
+function fimLuta(st){evento(st,{t:'vitoria'});st.herois.forEach(h=>{h.hp=Math.min(h.hpMax,Math.max(h.hp,0)+Math.round(h.hpMax*.6));h.cd=0;h.protegido=0;h.coragem=0});st.inimigos=[];st.passo++;st.fase='pausa';st.txt=st.chefe?'Fenrak caiu!':'Vitória!'}
+// ---------- rede (grupo) ----------
+function histEnvia(ev,payload){if(HIST.ch)HIST.ch.send({type:'broadcast',event:ev,payload}).catch(()=>{})}
+function histPublica(){if(HIST.host&&HIST.ch)histEnvia('estado',HIST.st);histDesenhaUI()}
+function histHostFaz(fn){if(!HIST.host)return;fn();histPublica();if(HIST.st.fase==='pausa'){setTimeout(()=>{if(HIST.st.fase==='pausa'){prepara(HIST.st);histPublica()}},1400)}}
+function histMeuHeroi(){return HIST.st?HIST.st.herois.findIndex(h=>h.uid===S.uid):-1}
+async function histAbreSala(codigo,souHost){histFecha(true);HIST.sala=codigo;HIST.host=souHost;HIST.membros={};HIST.st=null;HIST.conclui=false;HIST.ini=false;
+ tela('historia');histUI('lobby');
+ if(!codigo||DEMO||!sb){HIST.membros[S.uid]=S.me;histDesenhaUI();return}
+ const ch=sb.channel('historia-'+SRV+'-'+codigo,{config:{private:true,presence:{key:S.uid},broadcast:{self:false}}});HIST.ch=ch;
+ ch.on('presence',{event:'sync'},()=>{const p=ch.presenceState();HIST.membros={};for(const k in p){const v=p[k][0];if(v&&v.m)HIST.membros[k]=v.m}histDesenhaUI()});
+ ch.on('broadcast',{event:'estado'},({payload})=>{if(HIST.host)return;HIST.st=payload;if(HIST.st&&$('historia').classList.contains('on'))histUI('jogo');histDesenhaUI()});
+ ch.on('broadcast',{event:'acao'},({payload:a})=>{if(!HIST.host||!HIST.st)return;const hi=HIST.st.herois.findIndex(h=>h.uid===a.uid);if(hi<0)return;
+  if(a.tipo==='avancar')return histHostFaz(()=>avancar(HIST.st));if(a.tipo==='luta')return histHostFaz(()=>agir(HIST.st,hi,a.golpe,a.alvo))});
+ ch.on('broadcast',{event:'pede'},()=>{if(HIST.host&&HIST.st)histEnvia('estado',HIST.st)});
+ ch.subscribe(async s=>{if(s==='SUBSCRIBED'){await ch.track({m:{id:S.me.id,nome:S.me.nome,classe:S.me.classe,cor:S.me.cor,cabelo:S.me.cabelo,rank_classe:S.me.rank_classe,papel:S.me.papel,ataque:S.me.ataque},host:souHost});if(!souHost)histEnvia('pede',{})}})}
+function histFecha(silencioso){if(HIST.ch){try{sb.removeChannel(HIST.ch)}catch(e){}HIST.ch=null}cancelAnimationFrame(HIST.raf);HIST.raf=null;if(!silencioso){HIST.st=null;tela('cidade')}}
+function histComecar(){const cap=CAPS[0];const ms=Object.values(HIST.membros).slice(0,4);if(!ms.some(m=>m.id===S.me.id))ms.unshift(S.me);
+ HIST.st=novoEstado(cap,ms.map(heroiDe));prepara(HIST.st);histUI('jogo');histPublica();histLoop()}
+// ações do jogador (anfitrião aplica direto; convidado envia)
+function histAvancar(){if(!HIST.st||!HIST.host)return;histHostFaz(()=>avancar(HIST.st))}
+function histGolpe(golpe,alvo){const hi=histMeuHeroi();if(!HIST.st||HIST.st.turno!==hi)return;if(HIST.host)histHostFaz(()=>agir(HIST.st,hi,golpe,alvo));else histEnvia('acao',{uid:S.uid,tipo:'luta',golpe,alvo})}
+// heróis de quem saiu do grupo lutam sozinhos (anfitrião)
+setInterval(()=>{if(!HIST.host||!HIST.st||HIST.st.fase!=='luta'||HIST.st.turno<0)return;const h=HIST.st.herois[HIST.st.turno];if(!h||h.uid===S.uid)return;
+ const ch_=HIST.tv&&HIST.tv.k===HIST.st.turno+':'+HIST.st.rodada?HIST.tv:(HIST.tv={k:HIST.st.turno+':'+HIST.st.rodada,t:Date.now()});
+ if(!HIST.ch||!HIST.membros[h.uid]||Date.now()-ch_.t>25000){histHostFaz(()=>agir(HIST.st,HIST.st.turno,h.cd===0?'esp':'atk',vivosIni(HIST.st)[0]))}},2500);
+// ---------- interface ----------
+let histAlvo=0;
+function histUI(modo){$('hLobby').style.display=modo==='lobby'?'block':'none';$('hPainel').style.display=modo==='jogo'?'block':'none';histLoop()}
+function histDesenhaUI(){if(!$('historia').classList.contains('on'))return;
+ if(!HIST.st){const ms=Object.values(HIST.membros);
+  $('hLobby').innerHTML=`<div class="hcap">Capítulo 1</div><h2>A Pedra Antiga</h2><p class="hsub">${esc(CAPS[0].sub)}</p>
+   ${HIST.sala?`<div class="hcod">Código do grupo<b>${esc(HIST.sala)}</b><small>seus amigos do reino entram em ☰ › Modo história › Entrar em grupo</small></div>`:''}
+   <div class="hmem">${(ms.length?ms:[S.me]).slice(0,4).map(m=>`<div><canvas width="64" height="80" data-b="${esc(m.id)}"></canvas><span>${esc(curto(m.nome))}</span></div>`).join('')}</div>
+   ${HIST.host||!HIST.sala?`<button class="btn" id="hGo">${HIST.sala?'Começar com o grupo':'Começar'}</button>`:'<p class="hsub">Esperando o anfitrião começar…</p>'}
+   <button class="lnk" id="hSai">Voltar para a cidade</button>`;
+  $('hLobby').querySelectorAll('[data-b]').forEach(c=>{const m=ms.find(x=>x.id===c.dataset.b)||S.me;const g2=c.getContext('2d');desenha(g2,32,76,m.cor,m.cabelo,0,0,'',null,3.2,'',m.classe,m.nome)});
+  const go=$('hGo');if(go)go.onclick=histComecar;$('hSai').onclick=()=>histFecha();return}
+ if(!HIST.ini&&histMeuHeroi()>=0){HIST.ini=true;API.rpc('historia_iniciar',{p_capitulo:1}).catch(()=>{})}
+ const st=HIST.st,hi=histMeuHeroi(),meu=st.fase==='luta'&&st.turno===hi&&hi>=0;let h='';
+ if(st.fase==='fala')h=`<div class="hfala">${st.quem?`<b>${esc(st.quem)}</b>`:''}<p>${esc(st.txt)}</p>${HIST.host?'<button class="btn sm" id="hAv">Continuar ▸</button>':'<p class="hsub">O anfitrião vira a página…</p>'}</div>`;
+ else if(st.fase==='escolha')h=`<div class="hfala"><p>${esc(st.txt)}</p>${HIST.host||!HIST.sala?st.escolha.map((o,i)=>`<button class="btn sm sec" data-esc="${i}">${esc(o)}</button>`).join(''):'<p class="hsub">O anfitrião está decidindo…</p>'}</div>`;
+ else if(st.fase==='luta'){const vez=st.turno>=0?st.herois[st.turno]:null;
+  if(meu){const me=st.herois[hi];const [en,,]=ESPECIAL[me.arma];const ar=ARMA[me.arma]||['⚔️','Atacar'];
+   h=`<div class="hfala"><b>Sua vez, ${esc(me.nome)}</b><p class="hsub">Toque num inimigo para mirar.</p><div class="hbts"><button class="btn sm" data-g="atk">${ar[0]} ${esc(ar[1])}</button><button class="btn sm ok" data-g="esp" ${me.cd>0?'disabled style="opacity:.5"':''}>✨ ${esc(en)}${me.cd>0?` (${me.cd})`:''}</button></div></div>`}
+  else h=`<div class="hfala"><p>${vez?`Vez de <b>${esc(vez.nome)}</b>…`:'Os inimigos atacam!'}</p></div>`}
+ else if(st.fase==='pausa')h=`<div class="hfala"><p style="font:400 26px var(--tit);color:var(--gold)">${esc(st.txt)}</p></div>`;
+ else if(st.fase==='fim'){h=`<div class="hfala"><p style="font:400 26px var(--tit);color:var(--gold)">🏆 Capítulo 1 concluído!</p><p class="hsub" id="hRec">Guardando a recompensa…</p><button class="btn" id="hVolta">Voltar para a cidade</button></div>`;histConclui()}
+ else if(st.fase==='derrota')h=`<div class="hfala"><p>${esc(st.txt)}</p>${HIST.host||!HIST.sala?'<button class="btn" id="hDeNovo">Tentar de novo</button>':''}<button class="lnk" id="hVolta">Voltar para a cidade</button></div>`;
+ $('hPainel').innerHTML=h;
+ const q=s=>$('hPainel').querySelector(s);if(q('#hAv'))q('#hAv').onclick=histAvancar;if(q('#hVolta'))q('#hVolta').onclick=()=>histFecha();
+ if(q('#hDeNovo'))q('#hDeNovo').onclick=()=>{HIST.st=null;HIST.ini=false;histComecar()};
+ $('hPainel').querySelectorAll('[data-esc]').forEach(b=>b.onclick=()=>histHostFaz(()=>escolher(HIST.st,+b.dataset.esc)));
+ $('hPainel').querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>histGolpe(b.dataset.g,histAlvo))}
+async function histConclui(){if(HIST.conclui)return;HIST.conclui=true;
+ try{const r=await API.rpc('historia_concluir',{p_capitulo:1,p_grupo:HIST.st.herois.length});const el=$('hRec');if(el)el.innerHTML=r&&r.valdins?`+${fmt(r.xp)} XP de classe · +${fmt(r.valdins)} Valdins${r.primeira?' · primeira vitória!':''}`:'Recompensa de hoje já recebida. Volte amanhã.';carregar().catch(()=>{})}
+ catch(e){const el=$('hRec');if(el)el.textContent=e.message}}
+// ---------- desenho da cena (pixel em baixa resolução, ampliado) ----------
+function histLoop(){if(HIST.raf)return;const f=()=>{HIST.raf=requestAnimationFrame(f);histDesenha()};f()}
+const H_POS={h:i=>[28+(i%2)*24,232+i*16],i:i=>[122+(i%2)*24,234+(i%3)*16]};let H_LADO=-1;
+function histDesenha(){const cv_=$('hCv');if(!cv_||!$('historia').classList.contains('on')){cancelAnimationFrame(HIST.raf);HIST.raf=null;return}
+ const W_=cv_.clientWidth*DPR|0,H_=cv_.clientHeight*DPR|0;if(cv_.width!==W_||cv_.height!==H_){cv_.width=W_;cv_.height=H_}
+ if(!HIST.lo){HIST.lo=document.createElement('canvas');HIST.lo.width=180;HIST.lo.height=320}const L=HIST.lo,x=L.getContext('2d'),t=performance.now()/1000;
+ // céu, lua escondida, estrelas, floresta, clareira, Pedra Antiga e fogueira
+ const gr=x.createLinearGradient(0,0,0,320);gr.addColorStop(0,'#060812');gr.addColorStop(.6,'#141a2a');gr.addColorStop(1,'#0c140c');x.fillStyle=gr;x.fillRect(0,0,180,320);
+ for(let i=0;i<50;i++){const a=.3+.7*Math.abs(Math.sin(t*1.5+i));x.fillStyle=`rgba(255,250,230,${a})`;x.fillRect((Math.sin(i*91)*.5+.5)*180|0,(Math.sin(i*37)*.5+.5)*150|0,1,1)}
+ for(let k=0;k<2;k++){x.fillStyle=k?'#0a120c':'#0e1810';for(let i=0;i<12;i++){const px_=i*16+(k?8:0),hh=60+((i*37+k*13)%30);x.beginPath();x.moveTo(px_-12,215-k*8);x.lineTo(px_,215-k*8-hh);x.lineTo(px_+12,215-k*8);x.fill()}}
+ x.fillStyle='#16241a';x.fillRect(0,210,180,110);x.fillStyle='#1c2e20';for(let i=0;i<40;i++)x.fillRect((i*47)%180,212+((i*29)%100),2,1);
+ x.fillStyle='#3a3a46';x.fillRect(84,170,16,40);x.fillStyle='#4a4a58';x.fillRect(86,168,12,8);x.fillStyle='#6a8aff';x.globalAlpha=.4+.3*Math.sin(t*2);x.fillRect(89,182,2,2);x.fillRect(93,190,2,2);x.globalAlpha=1;
+ const fx_=92,fy=216;const lu=x.createRadialGradient(fx_,fy-4,2,fx_,fy-4,60);lu.addColorStop(0,'rgba(255,150,60,.28)');lu.addColorStop(1,'rgba(255,150,60,0)');x.fillStyle=lu;x.fillRect(fx_-60,fy-64,120,110);x.fillStyle='#5a3a20';x.fillRect(fx_-7,fy,14,3);x.fillStyle='#3a2410';x.fillRect(fx_-5,fy+1,10,2);for(let i=0;i<22;i++){const ph=(t*1.6+i/22)%1;const sz=1+((1-ph)*3|0);x.fillStyle=`rgba(255,${110+140*(1-ph)|0},${30+40*(1-ph)|0},${1-ph*.9})`;x.fillRect(fx_-5+((i*7)%11)+Math.sin(t*5+i)*1.5*ph,fy-1-ph*20,sz,sz)}
+ const st=HIST.st;
+ if(st){// heróis
+  st.herois.forEach((h,i)=>{const [hx,hy]=H_POS.h(i);const q=quadroBoneco(h.t,h.h,2,h.hp>0?Math.floor(t*2+i)%2:0,h.classe,h.nome);x.save();x.imageSmoothingEnabled=false;if(h.hp<=0){x.globalAlpha=.35}x.translate(hx,0);x.scale(H_LADO,1);x.drawImage(q,-11,hy-33,22,33);x.restore();
+   if(st.fase==='luta'){barra(x,hx-10,hy-33,20,h.hp/h.hpMax,'#5ad36a');if(st.turno===i){x.fillStyle='#ffd166';x.fillRect(hx-1,hy-44+Math.sin(t*6)*1,3,3)}if(h.protegido>0){x.strokeStyle='rgba(150,200,255,.7)';x.strokeRect(hx-12,hy-35,24,37)}}});
+  // inimigos
+  (st.inimigos||[]).forEach((e,i)=>{if(e.hp<=0)return;const [ex,ey]=H_POS.i(i);const im=sprLobo(Math.floor(t*4+i)%2);const s=e.k==='alfa'?2.4:1.4;x.imageSmoothingEnabled=false;x.save();x.translate(ex,0);x.scale(-1,1);
+   if(e.k==='alfa'){x.filter='brightness(0.7) sepia(1) hue-rotate(-30deg) saturate(3)'}x.drawImage(im,-im.width*s/2,ey-im.height*s,im.width*s,im.height*s);x.restore();x.filter='none';
+   if(e.congelado>0){x.fillStyle='rgba(255,220,120,.35)';x.fillRect(ex-12*s,ey-14*s,24*s,14*s)}
+   barra(x,ex-10*s,ey-im.height*s-6,20*s,e.hp/e.hpMax,'#ff5a4a');if(i===histAlvo&&st.fase==='luta'){x.fillStyle='#fff';x.fillRect(ex-1,ey-im.height*s-11,3,3)}});
+  // eventos novos viram efeitos
+  for(const e of st.ev){if(e.s<=HIST.visto)continue;HIST.visto=e.s;histFx(e)}
+ }
+ HIST.fx=HIST.fx.filter(f=>t<f.t0+f.d);
+ // amplia (cobre a tela) e desenha efeitos por cima
+ const g2=cv_.getContext('2d');g2.imageSmoothingEnabled=false;const esc_=Math.max(W_/180,H_*1.0/320);const ox=(W_-180*esc_)/2,oy=Math.max(H_-320*esc_,Math.min(0,(H_*.62-250*esc_)));
+ g2.fillStyle='#000';g2.fillRect(0,0,W_,H_);g2.drawImage(L,ox,oy,180*esc_,320*esc_);HIST.cam={ox,oy,esc:esc_};
+ for(const f of HIST.fx){const p=(t-f.t0)/f.d;const X_=ox+f.x*esc_,Y_=oy+(f.y-p*16)*esc_;if(f.txt){g2.globalAlpha=Math.min(1,(1-p)*2);g2.font=`700 ${Math.round(9*esc_/3*DPR/DPR*1.6)}px "Pixelify Sans",system-ui`;g2.textAlign='center';g2.lineWidth=4*DPR;g2.strokeStyle='#120c10';g2.strokeText(f.txt,X_,Y_);g2.fillStyle=f.cor;g2.fillText(f.txt,X_,Y_);g2.globalAlpha=1}
+  else{g2.fillStyle=f.cor;g2.globalAlpha=1-p;g2.beginPath();g2.arc(ox+f.x*esc_,oy+f.y*esc_,(4+p*18)*esc_/3,0,7);g2.fill();g2.globalAlpha=1}}}
+function barra(x,X_,Y_,w,p,cor){x.fillStyle='#0a0606';x.fillRect(X_-1,Y_-1,w+2,4);x.fillStyle=cor;x.fillRect(X_,Y_,Math.max(0,Math.round(w*p)),2)}
+function histPos(a){if(!HIST.st)return[90,200];const i=+a.slice(1);return a[0]==='h'?H_POS.h(i):H_POS.i(i)}
+function histFx(e){const t=performance.now()/1000;
+ if(e.t==='dano'){const [px_,py]=histPos(e.a);HIST.fx.push({t0:t,d:1,x:px_,y:py-30,txt:'-'+e.v,cor:'#ff6b5a'});HIST.fx.push({t0:t,d:.35,x:px_,y:py-8,cor:'rgba(255,200,120,.9)'})}
+ else if(e.t==='mordida'){const [px_,py]=histPos(e.a);HIST.fx.push({t0:t,d:1,x:px_,y:py-40,txt:'-'+e.v,cor:'#ffb08a'});HIST.fx.push({t0:t,d:.3,x:px_,y:py-10,cor:'rgba(255,255,255,.8)'})}
+ else if(e.t==='cura'){const [px_,py]=histPos(e.a);HIST.fx.push({t0:t,d:1.1,x:px_,y:py-26,txt:'+'+e.v,cor:'#8dfca8'})}
+ else if(e.t==='especial'){HIST.fx.push({t0:t,d:1.4,x:90,y:150,txt:e.nome,cor:'#ffd166'})}
+ else if(e.t==='uivo'){HIST.fx.push({t0:t,d:1.3,x:120,y:160,txt:'AUUUU!',cor:'#ff8a6a'})}
+ else if(e.t==='chamado'){HIST.fx.push({t0:t,d:1.3,x:130,y:175,txt:'+1 lobo',cor:'#ffb08a'})}
+ else if(e.t==='vitoria'){HIST.fx.push({t0:t,d:1.6,x:90,y:140,txt:'VITÓRIA!',cor:'#ffd166'})}
+ else if(e.t==='congela'){const [px_,py]=histPos(e.a);HIST.fx.push({t0:t,d:1.1,x:px_,y:py-30,txt:'congelado',cor:'#ffe08a'})}
+ else if(e.t==='protege'){HIST.fx.push({t0:t,d:1.1,x:45,y:190,txt:'escudos!',cor:'#9ad0ff'})}
+ else if(e.t==='canta'){HIST.fx.push({t0:t,d:1.1,x:45,y:190,txt:'coragem!',cor:'#ffd98a'})}}
+// mirar tocando no inimigo
+document.addEventListener('pointerdown',ev=>{if(!HIST.st||!HIST.cam||ev.target.id!=='hCv')return;const r=ev.target.getBoundingClientRect();const lx=((ev.clientX-r.left)*DPR-HIST.cam.ox)/HIST.cam.esc,ly=((ev.clientY-r.top)*DPR-HIST.cam.oy)/HIST.cam.esc;
+ let best=-1,bd=1e9;(HIST.st.inimigos||[]).forEach((e,i)=>{if(e.hp<=0)return;const [ex,ey]=H_POS.i(i);const d=Math.hypot(ex-lx,ey-8-ly);if(d<bd){bd=d;best=i}});if(best>=0&&bd<30){histAlvo=best}else if(HIST.st.fase==='fala'){histAvancar()}});
+// ---------- folha do menu ----------
+P.historia=()=>({t:'Modo história',h:CAPS.map(c=>`<div class="card"><h4>📖 Capítulo ${c.n} · ${esc(c.titulo)}</h4><p class="hint">${esc(c.sub)}</p>${c.bloqueado?'':`
+  <button class="btn" data-hs="solo">Jogar sozinho</button><button class="btn sec" data-hs="grupo">Criar grupo com amigos</button>
+  <label>Entrar no grupo de um amigo</label><div style="display:flex;gap:8px"><input id="hCod" placeholder="código" maxlength="6" style="flex:1;text-transform:uppercase"><button class="btn sm" style="width:auto;margin:0" data-hs="entrar">Entrar</button></div>`}</div>`).join('')+
+ `<p class="hint">Até 4 jogadores do mesmo reino. Cada um luta com a sua classe. Recompensa: XP de classe e Valdins (a primeira vitória vale mais).</p>`,
+ on:r=>{r.onclick=e=>{const b=e.target.closest('[data-hs]');if(!b)return;const k=b.dataset.hs;fecharTudo();
+  if(k==='solo')histAbreSala(null,true);
+  else if(k==='grupo')histAbreSala(Math.random().toString(36).slice(2,6).toUpperCase(),true);
+  else{const c=(r.querySelector('#hCod').value||'').trim().toUpperCase();if(c.length<3)return toast('Escreva o código do grupo');histAbreSala(c,false)}}}});
 
 // ================== INÍCIO ==================
 if(DEMO){const d=document.createElement('div');d.className='demo';d.textContent='MODO DEMONSTRAÇÃO · nada é salvo no servidor · entre com @valdreinor e qualquer senha para ver a Coroa';document.body.appendChild(d)}
