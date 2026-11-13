@@ -21,7 +21,7 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
 .scr{position:fixed;inset:0;display:none}
 .scr.on{display:block}
 /* portão */
-#portao,#cadastro,#espera{background:radial-gradient(ellipse at 50% 25%,#2a1410,#140b08 55%,#0b0605);overflow:auto}
+#portao,#cadastro,#espera,#reinos{background:radial-gradient(ellipse at 50% 25%,#2a1410,#140b08 55%,#0b0605);overflow:auto}
 .par{background:radial-gradient(ellipse at 50% 30%,#f2e4bf,#e3cf9f 70%,#cdb88a);color:var(--ink);border:0;box-shadow:0 0 0 3px #8a6a2a,0 0 0 5px #3a1a10,0 24px 70px rgba(0,0,0,.7);border-radius:6px}
 .gate{max-width:420px;margin:max(6vh,24px) auto 40px;padding:28px 24px;text-align:center}
 .gate img{width:120px;image-rendering:auto}
@@ -167,6 +167,20 @@ label{display:block;font:700 11px system-ui,sans-serif;letter-spacing:.12em;text
  <p class="hint" style="margin-top:18px">Se você segue a página, você já mora aqui. · <a href="/" style="color:var(--red)">voltar ao site</a></p>
 </div></section>
 
+<!-- ============ ESCOLHA DO REINO ============ -->
+<section class="scr" id="reinos"><div class="gate par">
+ <img src="brasao.png" alt="">
+ <h1>Escolha o seu reino</h1><div class="sub">cada reino é uma Valdreinor com rei, casas, Valdins e guerras próprios</div>
+ <div id="rLista"></div>
+ <div class="card" style="text-align:left;margin-top:14px"><h4>🔑 Entrar com código</h4><p class="hint">Um amigo fundou um reino fechado? Peça o código de convite.</p>
+  <form id="fCod"><input id="rCod" placeholder="ex.: K7Q2XA" autocapitalize="characters" maxlength="10"><button class="btn">Entrar no reino</button><div class="err" id="rCodErr"></div></form></div>
+ <div class="card" style="text-align:left"><h4>🏰 Fundar o meu reino</h4><p class="hint">Você vira o rei, convida os amigos e joga a sua própria versão de Valdreinor. Cada conta funda um reino.</p>
+  <form id="fCriar"><label>Nome do reino</label><input id="rNome" maxlength="40" placeholder="ex.: Reino da Pedra Negra">
+  <label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0"><input type="checkbox" id="rPub" checked style="width:auto"> Reino público (aparece na lista para qualquer um entrar)</label>
+  <button class="btn ok">Fundar reino</button><div class="err" id="rCriErr"></div></form></div>
+ <button class="lnk" id="rSair">Sair</button>
+</div></section>
+
 <!-- ============ LIVRO DE CADASTRO ============ -->
 <section class="scr" id="cadastro"><div class="livro par">
  <h2>Livro de Cadastro</h2><div class="sub">Quem é você em Valdreinor? O livro aceita tudo.</div><div id="cadAr" style="text-align:center;margin-top:10px;font:15px Georgia,serif"></div>
@@ -253,7 +267,9 @@ const NPC_CLASSE={'Rei Goldrath':'Rei','Antônio':'Guerreiro','Nicollas':'Cronom
 
 // ================== API (Supabase ou demonstração) ==================
 const DEMO=!SB_URL||!window.supabase;
-let sb=null;if(!DEMO)sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true}});
+let SRV=1;try{SRV=parseInt(localStorage.getItem('vald_srv')||'1',10)||1}catch(e){}
+function trocaReino(id,cad){try{localStorage.setItem('vald_srv',String(id));if(cad)sessionStorage.setItem('vald_cad','1')}catch(e){}location.reload()}
+let sb=null;if(!DEMO)sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true},global:{headers:{'x-servidor':String(SRV)}}});
 const mail=a=>arr(a)+'@'+DOMINIO;
 const API={
  async signUp(a,s){if(DEMO)return Mock.signUp(a,s);const {data,error}=await sb.auth.signUp({email:mail(a),password:s});if(error)throw traduz(error);if(!data.session)throw new Error('A confirmação por e-mail está ligada no Supabase. Desligue em Authentication → Providers → Email.');return data},
@@ -262,12 +278,13 @@ const API={
  async uid(){if(DEMO)return Mock.uid();const {data}=await sb.auth.getSession();return data.session?.user?.id||null},
  async email(){if(DEMO)return Mock.email();const {data}=await sb.auth.getSession();return data.session?.user?.email||''},
  async rpc(fn,args){if(DEMO)return Mock.rpc(fn,args);const {data,error}=await sb.rpc(fn,args);if(error)throw new Error(error.message);return data},
- async all(t,q){if(DEMO)return Mock.all(t);let r=sb.from(t).select('*');if(q&&q.order)r=r.order(q.order,{ascending:!!q.asc});if(q&&q.limit)r=r.limit(q.limit);const {data,error}=await r;if(error)throw new Error(error.message);return data||[]}
+ async all(t,q){if(DEMO)return Mock.all(t);let r=sb.from(t).select('*');if(t!=='servidores')r=r.eq('servidor',SRV);if(q&&q.order)r=r.order(q.order,{ascending:!!q.asc});if(q&&q.limit)r=r.limit(q.limit);const {data,error}=await r;if(error)throw new Error(error.message);return data||[]}
 };
 function traduz(e){const m=e.message||'';if(/Invalid login/i.test(m))return new Error('Arroba ou senha errados.');if(/already registered/i.test(m))return new Error('Esse @ já tem senha. Use "Entrar no reino".');if(/Password should be/i.test(m))return new Error('A senha precisa ter pelo menos 6 caracteres.');return new Error(m)}
 
 // ---------- modo demonstração (salva só neste aparelho) ----------
-const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
+const Mock=(()=>{const K='vald_demo_v1'+(SRV>1?'_s'+SRV:'');let D;try{D=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
+ let GA;try{GA=JSON.parse(localStorage.getItem('vald_demo_contas')||'null')}catch(e){}
  const now=()=>new Date().toISOString();
  if(!D){D={users:{},me:null,seq:1,moradores:[],transacoes:[],itens:[],ofertas:[],missoes:[],livros:[],processos:[],avisos:[],lojas:[],clas:[]};
   const seed=[['valdreinor','O Cronista','coroa','Mago','Escriba','#4a1a6a','#e8e8e8'],['goldrath','Rei Goldrath','conselho','Domador','Guarda','#8a1a2a','#ffd166'],['nathan_tolentino17','Nathan','conselho','Nenhuma','Mercador','#2f5a8a','#2a1a10'],['pedrohenrique14456','Payko','morador','Espadachim','Aventureiro','#1a1a3a','#e8e8f0'],['raphaelsardou','Tenshi','morador','Ranger','Caçador','#cfd8e8','#e8e8f0'],['adrianshout','Adrian','morador','Tank','Ferreiro','#1a1a22','#3b2414'],['gabeschossler','Gabe','morador','Clérigo','Curandeiro','#e8e4da','#e8d8a0'],['fanclubedo_isaque','Isaque','morador','Nenhuma','Guarda','#e8e4da','#7a7a7a']];
@@ -275,7 +292,9 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
   D.missoes.push({id:1,tipo:'real',titulo:'Proteger as cabras do reino',plano:'Lobos rondam o pasto do norte. A Coroa convoca um grupo para vigiar por três noites.',lider:'u4',membros:['u4','u3'],recompensa:'Uma carroça e dois cavalos',valdins:500,status:'aberta',diario:'08/11 20:30 · Primeira noite: rastros perto do lago.\n',criado_por:'u0',criado_em:now()});
   D.livros.push({id:1,autor:'u0',titulo:'Crônica · O dragão saiu da montanha',tipo:'cronica',conteudo:'Mil anos debaixo da neve. Naquela noite, o dragão ancestral abriu as asas e passou sobre as muralhas…',criado_em:now()});
   D.seq=10;}
- const save=()=>{try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}};
+ if(!GA)GA={users:D?D.users:{},me:D?D.me:null,srv:[{id:1,nome:'Valdreinor',oficial:true,publico:true,codigo:'OFICIAL',dono:'u0',criado_em:new Date().toISOString()}],seq:2};
+ D.users=GA.users;D.me=GA.me;if(SRV>1&&!D._srv){['moradores','missoes','itens','lojas','clas','livros','processos','avisos','transacoes','ofertas'].forEach(k=>D[k]=[]);D._srv=1}
+ const save=()=>{try{GA.users=D.users;GA.me=D.me;localStorage.setItem('vald_demo_contas',JSON.stringify(GA));localStorage.setItem(K,JSON.stringify(D))}catch(e){}};
  const me=()=>D.moradores.find(m=>m.conta===D.me);const byA=a=>{const m=D.moradores.find(x=>x.arroba===arr(a)&&x.status==='aprovado');if(!m)throw new Error('Morador @'+arr(a)+' não encontrado no reino');return m};
  const apr=()=>{const m=me();if(!m||m.status!=='aprovado')throw new Error('Você ainda não entrou no reino');return m};
  const coroa=()=>{const m=me();if(!m||!['coroa','rei','conselho'].includes(m.papel))throw new Error('Só a Coroa pode fazer isso');return m};
@@ -292,7 +311,15 @@ const Mock=(()=>{const K='vald_demo_v1';let D;try{D=JSON.parse(localStorage.getI
  const ids=a=>[...new Set((a||[]).filter(x=>arr(x)).map(x=>byA(x).id))];
  const ocup=u=>D.missoes.some(x=>['pedida','aberta'].includes(x.status)&&(x.lider===u||x.membros.includes(u)))||(D.moradores.find(m=>m.id===u)?.descanso_ate>now());
  const F={
-  cadastrar(a){const u=D.me;const ar=arr(a.p_arroba);let m=D.moradores.find(x=>x.conta===u);
+  meus_servidores(){const u=D.me;const meus=[];for(const sv of GA.srv){let d=null;try{d=JSON.parse(localStorage.getItem('vald_demo_v1'+(sv.id>1?'_s'+sv.id:''))||'null')}catch(e){}
+    const m=d&&d.moradores.find(x=>x.conta===u);if(m||sv.dono===u)meus.push({id:sv.id,nome:sv.nome,oficial:!!sv.oficial,publico:sv.publico,codigo:sv.dono===u?sv.codigo:null,sou_dono:sv.dono===u,personagem:m?m.nome:null,status:m?m.status:null,moradores:d?d.moradores.filter(x=>x.status==='aprovado').length:0})}
+   const pub=GA.srv.filter(sv=>sv.publico&&!meus.some(x=>x.id===sv.id)).map(sv=>{let d=null;try{d=JSON.parse(localStorage.getItem('vald_demo_v1'+(sv.id>1?'_s'+sv.id:''))||'null')}catch(e){}return{id:sv.id,nome:sv.nome,oficial:!!sv.oficial,moradores:d?d.moradores.filter(x=>x.status==='aprovado').length:0}});
+   const at=GA.srv.find(x=>x.id===SRV)||GA.srv[0];return{meus,publicos:pub,atual:{id:at.id,nome:at.nome,oficial:!!at.oficial,publico:at.publico,codigo:at.dono===u?at.codigo:null,sou_dono:at.dono===u}}},
+  criar_servidor(a){const u=D.me;if(!u)throw new Error('Entre com o seu @ primeiro');if(GA.srv.some(x=>x.dono===u&&!x.oficial))throw new Error('Você já criou um reino. Cada conta cria um só.');const nome=(a.p_nome||'').trim();if(nome.length<3)throw new Error('Dê um nome ao reino (3 letras ou mais)');
+   const id=GA.seq++;const codigo=Math.random().toString(36).slice(2,8).toUpperCase();GA.srv.push({id,nome:nome.slice(0,40),publico:!!a.p_publico,codigo,dono:u,criado_em:now()});return id},
+  entrar_servidor(a){const c=(a.p_codigo||'').trim().toUpperCase();const sv=a.p_id?GA.srv.find(x=>x.id===a.p_id&&x.publico):GA.srv.find(x=>x.codigo===c);if(!sv)throw new Error(a.p_id?'Esse reino não é público':'Código de convite não encontrado');return sv.id},
+  configurar_servidor(a){const sv=GA.srv.find(x=>x.id===SRV);if(!sv||sv.dono!==D.me)throw new Error('Só o fundador do reino muda isso');if(a.p_nome)sv.nome=a.p_nome.trim().slice(0,40);if(a.p_publico!==null&&a.p_publico!==undefined)sv.publico=!!a.p_publico;if(a.p_novo_codigo)sv.codigo=Math.random().toString(36).slice(2,8).toUpperCase()},
+  cadastrar(a){if(SRV>1)setTimeout(()=>{const m=D.moradores.find(x=>x.conta===D.me);const sv=GA.srv.find(x=>x.id===SRV);if(m&&m.status==='pendente'){m.status='aprovado';m.saldo=10000;if(sv&&sv.dono===D.me)m.papel='coroa';save()}},0);const u=D.me;const ar=arr(a.p_arroba);let m=D.moradores.find(x=>x.conta===u);
    const base={quem:a.p_quem,poderes:a.p_poderes,fraquezas:a.p_fraquezas,oficio:a.p_oficio};
    if(m){Object.assign(m,base);if(!m.travado)Object.assign(m,{nome:a.p_nome,classe:a.p_classe,cor:a.p_cor,cabelo:a.p_cabelo});if(m.status==='recusado')m.status='pendente';return m}
    const leg=D.moradores.find(x=>!x.conta&&x.status==='aprovado'&&(x.id===a.p_reivindica||(!a.p_reivindica&&x.arroba===ar)));
@@ -377,6 +404,7 @@ const pendGuilda=()=>guildaChefe()?S.missoes.filter(m=>m.status==='pedida').leng
 const curto=n=>String(n||'').split(',')[0];const nomeDe=id=>S.byId[id]?curto(S.byId[id].nome):'?';const arDe=id=>S.byId[id]&&S.byId[id].arroba?'@'+S.byId[id].arroba:'';
 async function carregar(){
  S.auth=await API.uid();S.uid=null;if(!S.auth)return;
+ try{const r=await API.rpc('meus_servidores',{});S.reinos=r;S.srv=r&&r.atual||{id:SRV,nome:'Valdreinor',oficial:SRV===1}}catch(e){S.srv={id:SRV,nome:'Valdreinor',oficial:SRV===1};S.reinos=null}
  const [mor,itens,ofertas,missoes,livros,processos,avisos,lojas,clas,tx]=await Promise.all(['moradores','itens','ofertas','missoes','livros','processos','avisos','lojas','clas','transacoes'].map(t=>API.all(t).catch(()=>[])));
  S.mor=mor;S.byId={};mor.forEach(m=>S.byId[m.id]=m);S.me=mor.find(m=>m.conta===S.auth)||null;S.uid=S.me?S.me.id:'-';
  Object.assign(S,{itens,ofertas,missoes,livros,processos,avisos:avisos.sort((a,b)=>b.criado_em<a.criado_em?-1:1),lojas,clas,tx:tx.sort((a,b)=>b.criado_em<a.criado_em?-1:1)});
@@ -397,7 +425,8 @@ const pendCoroa=()=>coroa()?S.mor.filter(m=>m.status==='pendente').length+S.miss
 function tela(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='cidade')iniciaCidade()}
 async function rota(){await carregar().catch(e=>toast(e.message));
  if(!S.auth)return tela('portao');
- if(!S.me)return abrirCadastro();
+ if(!S.me){let cad=false;try{cad=sessionStorage.getItem('vald_cad')==='1';sessionStorage.removeItem('vald_cad')}catch(e){}
+  if(cad)return abrirCadastro();return abrirReinos()}
  if(S.me.status==='aprovado')return tela('cidade');
  $('eT').textContent=S.me.status==='recusado'?'A Coroa pediu uma revisão':'Seu nome está no livro';
  $('eP').innerHTML=S.me.status==='recusado'?'Revise o seu cadastro e peça a entrada de novo.':'A Coroa vai ler o seu cadastro. Quando aprovar, os portões se abrem e você entra com <b>10.000 Valdins</b>.';
@@ -407,6 +436,18 @@ $('fLogin').onsubmit=async e=>{e.preventDefault();$('lErr').textContent='';try{a
 $('fNovo').onsubmit=async e=>{e.preventDefault();$('nErr').textContent='';if($('nS').value!==$('nS2').value)return $('nErr').textContent='As senhas não são iguais.';if(arr($('nA').value).length<2)return $('nErr').textContent='Escreva o seu @ do Instagram.';
  try{await API.signUp($('nA').value,$('nS').value);S.novoArroba=arr($('nA').value);await rota()}catch(er){$('nErr').textContent=er.message}};
 $('eR').onclick=rota;$('eE').onclick=()=>abrirCadastro(S.me);$('eS').onclick=sair;
+async function abrirReinos(){let r=S.reinos;try{r=await API.rpc('meus_servidores',{});S.reinos=r}catch(e){}
+ const meus=(r&&r.meus)||[],pub=(r&&r.publicos)||[];
+ const lin=(x,meu)=>`<button class="mi reino" data-rid="${x.id}" data-meu="${meu&&x.personagem?1:0}" style="width:100%;text-align:left"><span>${x.oficial?'👑':meu&&x.sou_dono?'🏰':'🛡️'}</span><div>${esc(x.nome)}${x.oficial?' <em style="position:static;background:#7a1a1a;margin-left:6px">oficial</em>':''}<small>${x.oficial?'O reino da história, com os moradores dos episódios · ':''}${fmt(x.moradores||0)} morador${(x.moradores||0)===1?'':'es'}${meu&&x.personagem?' · você é '+esc(curto(x.personagem)):meu&&x.sou_dono?' · você fundou, crie seu personagem':''}${x.status==='pendente'?' · aguardando aprovação':''}</small></div></button>`;
+ $('rLista').innerHTML=(meus.length?`<h4 style="text-align:left;margin:10px 0 6px;font:400 20px var(--tit)">Meus reinos</h4>`+meus.map(x=>lin(x,true)).join(''):'')+
+  (pub.length?`<h4 style="text-align:left;margin:16px 0 6px;font:400 20px var(--tit)">Reinos abertos</h4>`+pub.map(x=>lin(x,false)).join(''):'');
+ $('rLista').onclick=async e=>{const b=e.target.closest('[data-rid]');if(!b)return;const id=+b.dataset.rid;
+  if(b.dataset.meu==='1')return trocaReino(id);
+  try{await API.rpc('entrar_servidor',{p_id:id,p_codigo:null});trocaReino(id,true)}catch(er){toast(er.message)}};
+ tela('reinos')}
+$('fCod').onsubmit=async e=>{e.preventDefault();$('rCodErr').textContent='';try{const id=await API.rpc('entrar_servidor',{p_id:null,p_codigo:$('rCod').value});trocaReino(id,true)}catch(er){$('rCodErr').textContent=er.message}};
+$('fCriar').onsubmit=async e=>{e.preventDefault();$('rCriErr').textContent='';try{const id=await API.rpc('criar_servidor',{p_nome:$('rNome').value,p_publico:$('rPub').checked});trocaReino(id,true)}catch(er){$('rCriErr').textContent=er.message}};
+$('rSair').onclick=()=>sair();
 async function sair(){somDesliga();await API.signOut();S.auth=null;S.uid=null;S.me=null;fecharTudo();tela('portao')}
 
 // cadastro
@@ -661,7 +702,7 @@ function irPara(x,y){fecharTudo();if(cena)sairInt();[pl.x,pl.y]=perto_livre(x,y)
 // e uma batida a cada 20 s. Quem recebe calcula o caminho sozinho, então o boneco anda liso sem mensagem a cada quadro.
 const VIVO={ch:null,on:false,rem:{},online:new Set(),falas:{},ultFala:0,ultEnvio:0,andava:false,andavaInt:false};
 function vivoLiga(){if(DEMO||VIVO.ch||!S.me||!S.uid||S.uid==='-')return;
- const ch=sb.channel('cidade-valdreinor',{config:{private:true,presence:{key:S.uid},broadcast:{self:false}}});VIVO.ch=ch;
+ const ch=sb.channel(SRV===1?'cidade-valdreinor':'cidade-s'+SRV,{config:{private:true,presence:{key:S.uid},broadcast:{self:false}}});VIVO.ch=ch;
  ch.on('presence',{event:'sync'},()=>{VIVO.online=new Set(Object.keys(ch.presenceState()));for(const id in VIVO.rem)if(!VIVO.online.has(id))delete VIVO.rem[id];atualizaTopo()});
  ch.on('presence',{event:'join'},()=>{setTimeout(()=>vivoEnvia(true),300+Math.random()*700)});
  ch.on('broadcast',{event:'mv'},({payload:p})=>vivoRecebe(p));
@@ -727,7 +768,8 @@ function abrirMenu(){const m=S.me;const ofertas=S.ofertas.filter(o=>o.comprador=
  ${I('🏘️','Lojas e casas','comércios abertos e casas livres','lojas')}
  ${I('💰','O seu cofre','banco, mochila e o seu negócio','cofre',ofertas||'')}
  <div id="subCofre" style="display:none">${I('🏦','Banco de Valdreinor',fmt(m.saldo)+' Valdins','banco','','sub')}${I('🎒','Mochila',S.itens.filter(i=>i.dono===S.uid).length+'/20 espaços','mochila',ofertas||'','sub')}${I('🔨','Meu negócio','oficina e loja','negocio','','sub')}</div>
- ${I('📜','Missões','mural, diário e feitos','missoes',minhaMis||'')}
+ ${I('🏰','Reino: '+esc((S.srv&&S.srv.nome)||'Valdreinor'),S.srv&&S.srv.oficial?'servidor oficial · trocar de reino':'convidar amigos · trocar de reino','reino','')}
+  ${I('📜','Missões','mural, diário e feitos','missoes',minhaMis||'')}
   ${I('⚔️','Guerra',GU.sub(),'guerra',GU.ativa()?'!':'',GU.ativa()?'coroa':'')}
  ${I('🛡️','Clãs','junte 10 @ e peça um castelo','clas')}
  ${I('⚖️','Justiça e avisos','leve um caso à Coroa','justica',novosAvisos()||'')}
@@ -976,7 +1018,7 @@ const ARMA={espada:['🗡️','Golpe de espada'],furia:['🪓','Fúria do berser
  mortos:['💀','Exército dos mortos'],tempo:['⏳','Congelar o tempo'],flecha:['🏹','Chuva de flechas'],cura:['✨','Luz que cura a muralha'],
  bomba:['🧪','Bomba alquímica'],fera:['🐾','Ataque da fera'],punho:['👊','Punhos de ferro'],adaga:['🗡️','Golpe nas sombras'],
  cancao:['🎵','Canção de guerra'],pedra:['🪨','Pedrada'],toupeira:['⛏️','Colosso, a Toupeira Rei'],coroa:['👑','Poder da Coroa']};
-function armaDe(m){if(!m)return'pedra';if(m.papel==='coroa')return'coroa';if(m.ataque&&ARMA[m.ataque])return m.ataque;const c=m.classe||'';
+function armaDe(m){if(!m)return'pedra';if(m.papel==='coroa'&&(!S.srv||S.srv.oficial))return'coroa';if(m.ataque&&ARMA[m.ataque])return m.ataque;const c=m.classe||'';
  return /^(Guerreir|Espadach|Paladin|General)/.test(c)?'espada':/^Berserker/.test(c)?'furia':/^Tank/.test(c)?'escudo':/^Necromant/.test(c)?'mortos':/^Cronomant/.test(c)?'tempo':/^(Mago|Maga|Feiticeir|Brux)/.test(c)?'magia':
  /^(Arqueir|Ranger|Caçador|Explorador)/.test(c)?'flecha':/^(Clérig|Fada)/.test(c)?'cura':/^Alquimist/.test(c)?'bomba':/^Domador/.test(c)?'fera':/^Monge/.test(c)?'punho':/^Espi/.test(c)?'adaga':/^Bard/.test(c)?'cancao':'pedra'}
 const DESC_ARMA={espada:'dano forte',furia:'o maior dano entre os guerreiros',escudo:'dano e ainda reforça a muralha',magia:'dano alto à distância',mortos:'dano alto',
@@ -1165,6 +1207,16 @@ function sfx(tipo){if(!SOM.on||!SOM.ctx||window.__VIDEO)return;const C=SOM.ctx,t
  ruido(.18,3000,.16)}
 
 // ---------- folha da guerra ----------
+P.reino=()=>{const v=S.srv||{nome:'Valdreinor',oficial:true};
+ const h=`<div class="card"><h4>${v.oficial?'👑':'🏰'} ${esc(v.nome)}</h4><div class="meta">${v.oficial?'Servidor oficial · o reino dos episódios':v.publico?'Reino público · aparece na lista de reinos':'Reino fechado · só entra quem tem o código'}</div>
+  ${v.codigo&&!v.oficial?`<p style="margin-top:10px">Código de convite: <b style="font:700 26px 'Pixelify Sans';letter-spacing:.12em;color:var(--red)">${esc(v.codigo)}</b></p><button class="btn sm" id="rvCopia">Copiar convite</button>`:''}</div>
+  ${v.sou_dono&&!v.oficial?`<div class="card"><h4>Ajustes do fundador</h4><label>Nome do reino</label><input id="rvN" maxlength="40" value="${esc(v.nome)}"><label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0"><input type="checkbox" id="rvP" ${v.publico?'checked':''} style="width:auto"> Reino público</label><button class="btn" id="rvOk">Salvar</button><button class="btn sec sm" id="rvCod">Gerar novo código</button></div>`:''}
+  <div class="card"><h4>Outros reinos</h4><p class="hint">Cada reino tem um personagem seu, com Valdins, casa e ranking próprios.</p><button class="btn" id="rvTroca">Trocar de reino</button></div>`;
+ return{t:'Reino',h,on:r=>{const q=x=>r.querySelector(x);
+  if(q('#rvCopia'))q('#rvCopia').onclick=()=>{const t=`Entre no meu reino em Valdreinor! ⚔️\n${location.origin}/reino.html\nCódigo do reino: ${v.codigo}`;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Convite copiado')).catch(()=>prompt('Copie o convite:',t))};
+  if(q('#rvOk'))q('#rvOk').onclick=()=>exec('configurar_servidor',{p_nome:q('#rvN').value,p_publico:q('#rvP').checked,p_novo_codigo:false},'Reino atualizado');
+  if(q('#rvCod'))q('#rvCod').onclick=()=>{if(confirm('Gerar um código novo? O antigo para de funcionar.'))exec('configurar_servidor',{p_nome:null,p_publico:null,p_novo_codigo:true},'Código novo gerado')};
+  q('#rvTroca').onclick=()=>{fecharTudo();abrirReinos()}}}};
 P.guerra=()=>{const d=GU.d||{},g=GA(),a=armaDe(S.me);let h='';
  if(g){const vm=muralhaAgora(g),pr=proxGolpe();
   h+=`<div class="card gcard"><h4>${INIMIGO[g.inimigo][0]} ${esc(g.nome)}</h4><div class="meta">cerca o Portão Sul · termina em ${tempo(new Date(g.fim).getTime()-agoraSrv())}</div>
